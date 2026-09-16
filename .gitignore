@@ -1,0 +1,60 @@
+# Dependências do Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependências e Ambientes Virtuais do Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Variáveis de Ambiente e Credenciais (Nunca suba senhas ou chaves de API!)
+.env
+.env.local
+.env.development
+.env.production
+firebase-key.json
+*.pem
+
+# Arquivos de Build do Electron / Pacotes Gerados
+out/
+dist/
+release/
+*.exe
+*.AppImage
+*.dmg
+*.zip
+
+# Arquivos de Configuração de IDEs e Editores
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Arquivos do Sistema Operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs e Banco de Dados Local / Registros Temporários
+*.log
+*.sqlite
+*.db
+tmp/
+temp/
