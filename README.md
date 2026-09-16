@@ -4,7 +4,7 @@ Siga os passos abaixo no terminal para rodar a aplicação localmente:
 
 ### 1. Clonar o repositório
 ```bash
-git clone https://github.com/Almile/valletDesktop
+git clone https://github.com/Almile/valletDesktop.git
 cd valletDesktop
 ```
 
