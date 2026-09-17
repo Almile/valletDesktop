@@ -1,13 +1,37 @@
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
+import { apiService } from "../services/api";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
+  const [admin, setAdmin] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function carregarPerfil() {
+      try {
+        const perfil = await apiService.getPerfil();
+        setAdmin(perfil);
+      } catch (err) {
+        console.error("Erro ao carregar dados do admin:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregarPerfil();
+  }, []);
+  
   return (
     <Layout title="Visão geral">
       <section className="welcome-card">
         <div>
-          <p className="section-label">OLÁ, ADMINISTRADOR</p>
-          <h2>Comece a organizar sua operação</h2>
+          <p className="section-label">
+            {loading ? "CARREGANDO..." : `OLÁ, ${admin?.nome?.toUpperCase() || "ADMINISTRADOR"}`}
+          </p>
+          <h2>
+            {loading ? "Carregando informações..." : `Bem-vindo(a), ${admin?.nome || "Administrador"}`}
+          </h2>
           <p>
             Cadastre o primeiro estacionamento e depois adicione os gerentes
             responsáveis.

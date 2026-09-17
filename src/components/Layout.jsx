@@ -1,8 +1,19 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import Brand from "./Brand";
+import { apiService } from "../services/api";
 
 export default function Layout({ title, children }) {
   const navigate = useNavigate();
+
+  async function handleLogout() {
+    try {
+      await apiService.logout();
+    } catch (error) {
+      console.error("Erro ao realizar logout:", error);
+    } finally {
+      navigate("/login");
+    }
+  }
 
   return (
     <div className="dashboard-layout">
@@ -21,7 +32,7 @@ export default function Layout({ title, children }) {
           </NavLink>
         </nav>
 
-        <button className="logout-button" onClick={() => navigate("/login")}>
+        <button className="logout-button" onClick={handleLogout}>
           ↪ <span>Sair</span>
         </button>
       </aside>

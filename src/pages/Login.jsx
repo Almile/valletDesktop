@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Brand from "../components/Brand";
+import { apiService } from "../services/api";
 
 function EyeIcon({ passwordVisible }) {
   return passwordVisible ? (
@@ -16,12 +17,28 @@ function EyeIcon({ passwordVisible }) {
 }
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    navigate("/");
+    setError("");
+    setLoading(true);
+
+    try {
+      await apiService.login(email, password);
+      
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "E-mail ou senha inválidos.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -50,12 +67,21 @@ export default function Login() {
           <p className="section-label">BEM-VINDO DE VOLTA</p>
           <h2>Acesse sua conta</h2>
 
+          {error && (
+            <div style={{ color: "#e53e3e", marginBottom: "1rem", fontSize: "0.9rem" }}>
+              {error}
+            </div>
+          )}
+
           <label htmlFor="email">E-mail</label>
           <input
             type="email"
             id="email"
             placeholder="administrador@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
 
           <label htmlFor="password">Senha</label>
@@ -64,8 +90,11 @@ export default function Login() {
               type={passwordVisible ? "text" : "password"}
               id="password"
               placeholder="Digite sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               minLength="6"
               required
+              disabled={loading}
             />
             <button
               type="button"
@@ -84,8 +113,8 @@ export default function Login() {
             </button>
           </div>
 
-          <button type="submit" className="primary-button">
-            Entrar
+          <button type="submit" className="primary-button" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
       </section>
