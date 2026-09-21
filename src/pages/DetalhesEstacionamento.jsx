@@ -53,6 +53,10 @@ export default function DetalhesEstacionamento() {
                 <dd>Avenida Presidente Kennedy, 1000</dd>
               </div>
               <div>
+                <dt>Complemento</dt>
+                <dd>Próximo ao shopping</dd>
+              </div>
+              <div>
                 <dt>Bairro</dt>
                 <dd>Boqueirão</dd>
               </div>
@@ -83,7 +87,7 @@ export default function DetalhesEstacionamento() {
                 <dd>22:00</dd>
               </div>
               <div>
-                <dt>Valor por hora</dt>
+                <dt>Valor base por hora</dt>
                 <dd>R$ 10,00</dd>
               </div>
             </dl>
@@ -103,6 +107,10 @@ export default function DetalhesEstacionamento() {
               <article>
                 <small>Vagas PCD</small>
                 <strong>4</strong>
+              </article>
+              <article>
+                <small>Vagas para idosos</small>
+                <strong>3</strong>
               </article>
             </div>
           </section>

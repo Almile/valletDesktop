@@ -448,16 +448,80 @@ select {
   grid-column: 1 / -1;
 }
 .parking-capacity-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
-.schedule-fields {
+.address-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.address-field--cep {
+  grid-column: span 3;
+}
+.address-field--street {
+  grid-column: span 6;
+}
+.address-field--complement {
+  grid-column: span 3;
+}
+.address-field--number {
+  grid-column: span 2;
+}
+.address-field--district,
+.address-field--city {
+  grid-column: span 4;
+}
+.address-field--state {
+  grid-column: span 2;
+}
+.form-subsection {
+  margin-top: 22px;
+}
+.form-subsection h3 {
+  margin: 0 0 12px;
+  color: var(--dark);
+  font-size: 15px;
+}
+.operation-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.currency-input {
   display: flex;
-  margin-top: 20px;
-  align-items: flex-end;
-  gap: 16px;
+  height: 48px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--gray);
+  border-radius: 10px;
+  background: #fff;
 }
-.form-field--compact {
-  width: 190px;
+.currency-input:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0, 166, 118, 0.13);
+}
+.currency-prefix {
+  display: grid;
+  width: 48px;
+  height: 100%;
+  flex: 0 0 48px;
+  place-items: center;
+  border-right: 1px solid #e2e7e5;
+  color: var(--muted);
+  background: #f5f7f6;
+  font-size: 14px;
+  font-weight: 700;
+}
+.currency-input input {
+  min-width: 0;
+  width: auto;
+  flex: 1;
+  height: 46px;
+  border: 0;
+  box-shadow: none !important;
+}
+.currency-input input::-webkit-inner-spin-button,
+.currency-input input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
 }
 .form-field > span {
   font-size: 14px;
@@ -700,7 +764,7 @@ select {
 }
 .parking-summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 .parking-summary-grid article {
@@ -755,6 +819,21 @@ select {
   .parking-capacity-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .address-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .address-field--cep,
+  .address-field--street,
+  .address-field--complement,
+  .address-field--number,
+  .address-field--district,
+  .address-field--city,
+  .address-field--state {
+    grid-column: auto;
+  }
+  .operation-fields-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .form-field--full {
     grid-column: 1 / -1;
   }
@@ -772,15 +851,15 @@ select {
     grid-template-columns: 1fr;
   }
   .form-field--wide,
-  .form-field--full {
+  .form-field--full,
+  .address-field--cep,
+  .address-field--street,
+  .address-field--complement,
+  .address-field--number,
+  .address-field--district,
+  .address-field--city,
+  .address-field--state {
     grid-column: auto;
-  }
-  .schedule-fields {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  .form-field--compact {
-    width: 100%;
   }
   .form-actions {
     align-items: stretch;
@@ -799,6 +878,9 @@ select {
   }
   .primary-link {
     width: 100%;
+  }
+  .operation-fields-grid {
+    grid-template-columns: 1fr;
   }
   .details-header,
   .details-title-line,
