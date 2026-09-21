@@ -41,6 +41,12 @@ export default function Estacionamentos() {
                     <span>▣</span>
                     <strong>Nenhum estacionamento cadastrado</strong>
                     <p>Os estacionamentos aparecerão aqui após o cadastro.</p>
+                    <Link
+                      className="empty-preview-link"
+                      to="/estacionamentos/exemplo"
+                    >
+                      Visualizar modelo da página de dados
+                    </Link>
                   </div>
                 </td>
               </tr>

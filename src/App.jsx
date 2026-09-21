@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import DetalhesEstacionamento from "./pages/DetalhesEstacionamento";
 import Estacionamentos from "./pages/Estacionamentos";
 import Gerentes from "./pages/Gerentes";
 import { CadastroEstacionamento } from "./pages/Estacionamentos";
@@ -14,6 +15,10 @@ export default function App() {
       <Route
         path="/estacionamentos/novo"
         element={<CadastroEstacionamento />}
+      />
+      <Route
+        path="/estacionamentos/:estacionamentoId"
+        element={<DetalhesEstacionamento />}
       />
       <Route path="/gerentes" element={<Gerentes />} />
       <Route path="/gerentes/novo" element={<CadastroGerente />} />
