@@ -13,7 +13,7 @@ export default function Dashboard() {
             responsáveis.
           </p>
         </div>
-        <Link className="light-button" to="/estacionamentos">
+        <Link className="light-button" to="/estacionamentos/novo">
           Cadastrar estacionamento
         </Link>
       </section>
