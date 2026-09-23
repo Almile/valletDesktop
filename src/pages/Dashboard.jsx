@@ -5,23 +5,52 @@ import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [admin, setAdmin] = useState(null);
+  const [stats, setStats] = useState({
+    estacionamentos: 0,
+    gerentes: 0,
+    vagas: 0,
+  });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function carregarPerfil() {
+    async function carregarDashboard() {
       try {
-        const perfil = await apiService.getPerfil();
+        setLoading(true);
+
+        const [perfil, listaEstacionamentos, listaGerentes] = await Promise.all([
+          apiService.getPerfil(),
+          apiService.getEstacionamentos().catch(() => []),
+          apiService.getGerentes().catch(() => []),
+        ]);
+
         setAdmin(perfil);
+
+        let totalVagas = 0;
+        if (Array.isArray(listaEstacionamentos) && listaEstacionamentos.length > 0) {
+          const promessasVagas = listaEstacionamentos.map((est) =>
+            apiService.getVagasEstacionamento(est.id).catch(() => [])
+          );
+          const resultadosVagas = await Promise.all(promessasVagas);
+          totalVagas = resultadosVagas.reduce((acc, vagas) => acc + (vagas?.length || 0), 0);
+        }
+
+        setStats({
+          estacionamentos: listaEstacionamentos?.length || 0,
+          gerentes: listaGerentes?.length || 0,
+          vagas: totalVagas,
+        });
       } catch (err) {
-        console.error("Erro ao carregar dados do admin:", err);
+        console.error("Erro ao carregar dados do Dashboard:", err);
+        setError("Não foi possível carregar todas as informações do painel.");
       } finally {
         setLoading(false);
       }
     }
 
-    carregarPerfil();
+    carregarDashboard();
   }, []);
-  
+
   return (
     <Layout title="Visão geral">
       <section className="welcome-card">
@@ -33,8 +62,9 @@ export default function Dashboard() {
             {loading ? "Carregando informações..." : `Bem-vindo(a), ${admin?.nome || "Administrador"}`}
           </h2>
           <p>
-            Cadastre o primeiro estacionamento e depois adicione os gerentes
-            responsáveis.
+            {stats.estacionamentos === 0
+              ? "Cadastre o primeiro estacionamento e depois adicione os gerentes responsáveis."
+              : "Acompanhe o resumo do sistema e gerencie suas unidades e colaboradores."}
           </p>
         </div>
         <Link className="light-button" to="/estacionamentos/novo">
@@ -42,26 +72,32 @@ export default function Dashboard() {
         </Link>
       </section>
 
+      {error && (
+        <div style={{ color: "#721c24", backgroundColor: "#f8d7da", padding: "12px", borderRadius: "6px", marginBottom: "16px" }}>
+          {error}
+        </div>
+      )}
+
       <section className="statistics-grid">
         <article>
           <i>▣</i>
           <div>
             <small>Estacionamentos</small>
-            <strong>0</strong>
+            <strong>{loading ? "..." : stats.estacionamentos}</strong>
           </div>
         </article>
         <article>
           <i>♙</i>
           <div>
             <small>Gerentes</small>
-            <strong>0</strong>
+            <strong>{loading ? "..." : stats.gerentes}</strong>
           </div>
         </article>
         <article>
           <i>P</i>
           <div>
             <small>Total de vagas</small>
-            <strong>0</strong>
+            <strong>{loading ? "..." : stats.vagas}</strong>
           </div>
         </article>
       </section>

@@ -88,4 +88,62 @@ export const apiService = {
       this.clearSession();
     }
   },
+
+  async getEstacionamentos() {
+    return this.request("/estacionamento/listar_estacionamentos_usuario", { method: "GET" });
+  },
+
+  async criarEstacionamento(dados) {
+    return this.request("/estacionamento/criar_estacionamento", {
+      method: "POST",
+      body: JSON.stringify(dados),
+    });
+  },
+
+  async getAdmins() {
+    return this.request("/usuarios?tipo=admin", { method: "GET" });
+  },
+  async getGerentes() {
+    return this.request("/usuarios?tipo=admin", { method: "GET" });
+  },
+
+  async criarGerente(dados) {
+    return this.request("/auth/criar_usuario", {
+      method: "POST",
+      body: JSON.stringify(dados),
+    });
+  },
+  async getEstacionamentoPorId(id) {
+    return this.request(`/estacionamento/buscar_estacionamento/${id}`, { method: "GET" });
+  },
+
+  async getVagasEstacionamento(estacionamentoId) {
+    return this.request(`/vaga/estacionamento/${estacionamentoId}`, { method: "GET" });
+  },
+
+  async criarVaga(dados) {
+    return this.request("/vaga/criar", {
+      method: "POST",
+      body: JSON.stringify(dados),
+    });
+  },
+
+  async criarVagasEmLote(dados) {
+    return this.request("/vaga/criar_lote", {
+      method: "POST",
+      body: JSON.stringify(dados),
+    });
+  },
+
+  async atualizarVaga(vagaId, dados) {
+    return this.request(`/vaga/atualizar/${vagaId}`, {
+      method: "PATCH",
+      body: JSON.stringify(dados),
+    });
+  },
+
+  async excluirVaga(vagaId) {
+    return this.request(`/vaga/excluir/${vagaId}`, { method: "DELETE" });
+  },
 };
+
