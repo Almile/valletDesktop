@@ -20,16 +20,20 @@ export default function App() {
         <Route path="/estacionamentos" element={<Estacionamentos />} />
         <Route path="/gerentes" element={<Gerentes />} />
         <Route
-        path="/estacionamentos/novo"
-        element={<CadastroEstacionamento />}
-      />
-      <Route
-        path="/estacionamentos/:estacionamentoId"
-        element={<DetalhesEstacionamento />}
-      />
-      <Route path="/gerentes/novo" element={<CadastroGerente />} />
+          path="/estacionamentos/novo"
+          element={<CadastroEstacionamento />}
+        />
+        <Route
+          path="/estacionamentos/:estacionamentoId/editar"
+          element={<CadastroEstacionamento />}
+        />
+        <Route
+          path="/estacionamentos/:estacionamentoId"
+          element={<DetalhesEstacionamento />}
+        />
+        <Route path="/gerentes/novo" element={<CadastroGerente />} />
       </Route>
-      
+
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

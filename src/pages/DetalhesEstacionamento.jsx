@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
-import { apiService } from "../services/api"
+import { apiService } from "../services/api";
 
 export default function DetalhesEstacionamento() {
   const { estacionamentoId } = useParams();
@@ -63,10 +63,10 @@ export default function DetalhesEstacionamento() {
       const matchesSearch =
         !normalizedSearch ||
         (vaga.numero && vaga.numero.toLowerCase().includes(normalizedSearch)) ||
-        (vaga.localizacao && vaga.localizacao.toLowerCase().includes(normalizedSearch));
+        (vaga.localizacao &&
+          vaga.localizacao.toLowerCase().includes(normalizedSearch));
 
-      const matchesCategory =
-        category === "todas" || vaga.tipo === category;
+      const matchesCategory = category === "todas" || vaga.tipo === category;
 
       const isDisponivel = vaga.disponivel ? "Livre" : "Ocupada";
       const matchesAvailability =
@@ -86,7 +86,13 @@ export default function DetalhesEstacionamento() {
         estacionamentoId,
       });
       setShowModalSingle(false);
-      setNovaVaga({ numero: "", localizacao: "", preco: 0, tipo: "Comum", preferencial: false });
+      setNovaVaga({
+        numero: "",
+        localizacao: "",
+        preco: 0,
+        tipo: "Comum",
+        preferencial: false,
+      });
       await carregarDados();
     } catch (err) {
       alert(err.message || "Erro ao criar vaga.");
@@ -118,7 +124,9 @@ export default function DetalhesEstacionamento() {
     try {
       await apiService.atualizarVaga(vaga.id, { disponivel: !vaga.disponivel });
       setVagas((prev) =>
-        prev.map((v) => (v.id === vaga.id ? { ...v, disponivel: !v.disponivel } : v))
+        prev.map((v) =>
+          v.id === vaga.id ? { ...v, disponivel: !v.disponivel } : v,
+        ),
       );
     } catch (err) {
       alert("Erro ao alterar o status da vaga.");
@@ -133,7 +141,8 @@ export default function DetalhesEstacionamento() {
     );
   }
 
-  const enderecoObj = typeof estacionamento?.endereco === "object" ? estacionamento.endereco : {};
+  const enderecoObj =
+    typeof estacionamento?.endereco === "object" ? estacionamento.endereco : {};
 
   return (
     <Layout title="Dados do estacionamento">
@@ -148,6 +157,14 @@ export default function DetalhesEstacionamento() {
           </div>
 
           <div className="details-actions">
+            {estacionamento && (
+              <Link
+                className="primary-link"
+                to={`/estacionamentos/${estacionamentoId}/editar`}
+              >
+                Editar estacionamento
+              </Link>
+            )}
             <Link className="secondary-button" to="/estacionamentos">
               Voltar
             </Link>
@@ -155,7 +172,15 @@ export default function DetalhesEstacionamento() {
         </header>
 
         {error && (
-          <div style={{ color: "red", backgroundColor: "#ffe6e6", padding: "12px", margin: "16px 0", borderRadius: "6px" }}>
+          <div
+            style={{
+              color: "red",
+              backgroundColor: "#ffe6e6",
+              padding: "12px",
+              margin: "16px 0",
+              borderRadius: "6px",
+            }}
+          >
             {error}
           </div>
         )}
@@ -184,7 +209,17 @@ export default function DetalhesEstacionamento() {
             <dl className="details-grid">
               <div className="details-field--wide">
                 <dt>Logradouro</dt>
-                <dd>{enderecoObj.logradouro || "-"}</dd>
+                <dd>
+                  {[
+                    enderecoObj.logradouro ||
+                      (typeof estacionamento?.endereco === "string"
+                        ? estacionamento.endereco
+                        : ""),
+                    enderecoObj.numero,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "-"}
+                </dd>
               </div>
               <div>
                 <dt>Complemento</dt>
@@ -196,7 +231,12 @@ export default function DetalhesEstacionamento() {
               </div>
               <div>
                 <dt>Cidade</dt>
-                <dd>{enderecoObj.localidade || enderecoObj.cidade || "-"}</dd>
+                <dd>
+                  {enderecoObj.cidade ||
+                    enderecoObj.localidade ||
+                    estacionamento?.cidade ||
+                    "-"}
+                </dd>
               </div>
               <div>
                 <dt>UF</dt>
@@ -231,7 +271,9 @@ export default function DetalhesEstacionamento() {
               )}
               <div>
                 <dt>Valor base por hora</dt>
-                <dd>R$ {parseFloat(estacionamento?.valorHora || 0).toFixed(2)}</dd>
+                <dd>
+                  R$ {parseFloat(estacionamento?.valorHora || 0).toFixed(2)}
+                </dd>
               </div>
             </dl>
           </section>
@@ -249,7 +291,12 @@ export default function DetalhesEstacionamento() {
               </article>
               <article>
                 <small>Vagas PCD / Preferenciais</small>
-                <strong>{vagas.filter((v) => v.tipo === "IdosoPcd" || v.preferencial).length}</strong>
+                <strong>
+                  {
+                    vagas.filter((v) => v.tipo === "IdosoPcd" || v.preferencial)
+                      .length
+                  }
+                </strong>
               </article>
               <article>
                 <small>Vagas Ocupadas</small>
@@ -261,7 +308,9 @@ export default function DetalhesEstacionamento() {
               <header className="vacancies-panel-header">
                 <div>
                   <h4>Gestão de vagas</h4>
-                  <p>Vagas cadastradas no sistema e disponíveis para reserva.</p>
+                  <p>
+                    Vagas cadastradas no sistema e disponíveis para reserva.
+                  </p>
                 </div>
 
                 <div className="vacancies-panel-actions">
@@ -343,7 +392,9 @@ export default function DetalhesEstacionamento() {
                           </td>
                           <td>{vacancy.localizacao || "Padrão"}</td>
                           <td>{vacancy.tipo}</td>
-                          <td>R$ {parseFloat(vacancy.preco || 0).toFixed(2)}</td>
+                          <td>
+                            R$ {parseFloat(vacancy.preco || 0).toFixed(2)}
+                          </td>
                           <td>{vacancy.preferencial ? "Sim" : "Não"}</td>
                           <td>
                             <span
@@ -353,7 +404,9 @@ export default function DetalhesEstacionamento() {
                                 padding: "4px 8px",
                                 borderRadius: "4px",
                                 color: "#fff",
-                                backgroundColor: vacancy.disponivel ? "#28a745" : "#dc3545",
+                                backgroundColor: vacancy.disponivel
+                                  ? "#28a745"
+                                  : "#dc3545",
                               }}
                               onClick={() => toggleDisponibilidade(vacancy)}
                               title="Clique para alterar status"
@@ -364,9 +417,18 @@ export default function DetalhesEstacionamento() {
                           <td className="vacancy-actions-cell">
                             <button
                               type="button"
-                              style={{ color: "red", border: "none", background: "none", cursor: "pointer" }}
+                              style={{
+                                color: "red",
+                                border: "none",
+                                background: "none",
+                                cursor: "pointer",
+                              }}
                               onClick={async () => {
-                                if (confirm(`Deseja excluir a vaga ${vacancy.numero}?`)) {
+                                if (
+                                  confirm(
+                                    `Deseja excluir a vaga ${vacancy.numero}?`,
+                                  )
+                                ) {
                                   await apiService.excluirVaga(vacancy.id);
                                   carregarDados();
                                 }
@@ -404,7 +466,9 @@ export default function DetalhesEstacionamento() {
                   required
                   placeholder="Ex: A-01, Vaga 12"
                   value={novaVaga.numero}
-                  onChange={(e) => setNovaVaga({ ...novaVaga, numero: e.target.value })}
+                  onChange={(e) =>
+                    setNovaVaga({ ...novaVaga, numero: e.target.value })
+                  }
                 />
               </div>
               <div style={formGroupStyle}>
@@ -413,14 +477,18 @@ export default function DetalhesEstacionamento() {
                   type="text"
                   placeholder="Ex: Piso 1, Setor Norte"
                   value={novaVaga.localizacao}
-                  onChange={(e) => setNovaVaga({ ...novaVaga, localizacao: e.target.value })}
+                  onChange={(e) =>
+                    setNovaVaga({ ...novaVaga, localizacao: e.target.value })
+                  }
                 />
               </div>
               <div style={formGroupStyle}>
                 <label>Tipo da Vaga:</label>
                 <select
                   value={novaVaga.tipo}
-                  onChange={(e) => setNovaVaga({ ...novaVaga, tipo: e.target.value })}
+                  onChange={(e) =>
+                    setNovaVaga({ ...novaVaga, tipo: e.target.value })
+                  }
                 >
                   <option value="Comum">Comum</option>
                   <option value="IdosoPcd">Idoso / PCD</option>
@@ -433,14 +501,27 @@ export default function DetalhesEstacionamento() {
                   type="number"
                   step="0.01"
                   value={novaVaga.preco}
-                  onChange={(e) => setNovaVaga({ ...novaVaga, preco: e.target.value })}
+                  onChange={(e) =>
+                    setNovaVaga({ ...novaVaga, preco: e.target.value })
+                  }
                 />
               </div>
-              <div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <div
+                style={{
+                  marginTop: "15px",
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "flex-end",
+                }}
+              >
                 <button type="button" onClick={() => setShowModalSingle(false)}>
                   Cancelar
                 </button>
-                <button type="submit" disabled={submitting} className="primary-button">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="primary-button"
+                >
                   {submitting ? "Salvando..." : "Salvar Vaga"}
                 </button>
               </div>
@@ -462,7 +543,9 @@ export default function DetalhesEstacionamento() {
                   max="100"
                   required
                   value={loteVagas.quantidade}
-                  onChange={(e) => setLoteVagas({ ...loteVagas, quantidade: e.target.value })}
+                  onChange={(e) =>
+                    setLoteVagas({ ...loteVagas, quantidade: e.target.value })
+                  }
                 />
               </div>
               <div style={formGroupStyle}>
@@ -470,14 +553,18 @@ export default function DetalhesEstacionamento() {
                 <input
                   type="text"
                   value={loteVagas.prefixo}
-                  onChange={(e) => setLoteVagas({ ...loteVagas, prefixo: e.target.value })}
+                  onChange={(e) =>
+                    setLoteVagas({ ...loteVagas, prefixo: e.target.value })
+                  }
                 />
               </div>
               <div style={formGroupStyle}>
                 <label>Tipo de Vaga:</label>
                 <select
                   value={loteVagas.tipo}
-                  onChange={(e) => setLoteVagas({ ...loteVagas, tipo: e.target.value })}
+                  onChange={(e) =>
+                    setLoteVagas({ ...loteVagas, tipo: e.target.value })
+                  }
                 >
                   <option value="Comum">Comum</option>
                   <option value="IdosoPcd">Idoso / PCD</option>
@@ -491,14 +578,27 @@ export default function DetalhesEstacionamento() {
                   type="text"
                   placeholder="Ex: Terreno Principal"
                   value={loteVagas.localizacao}
-                  onChange={(e) => setLoteVagas({ ...loteVagas, localizacao: e.target.value })}
+                  onChange={(e) =>
+                    setLoteVagas({ ...loteVagas, localizacao: e.target.value })
+                  }
                 />
               </div>
-              <div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <div
+                style={{
+                  marginTop: "15px",
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "flex-end",
+                }}
+              >
                 <button type="button" onClick={() => setShowModalLote(false)}>
                   Cancelar
                 </button>
-                <button type="submit" disabled={submitting} className="primary-button">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="primary-button"
+                >
                   {submitting ? "Gerando..." : "Gerar Vagas"}
                 </button>
               </div>

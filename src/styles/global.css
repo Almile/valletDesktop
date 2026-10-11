@@ -1017,12 +1017,6 @@ select {
   .operation-fields-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .operation-fields-grid .operating-hours-toggle {
-    min-height: 48px;
-  }
-  .operating-hours-toggle-track {
-    flex-shrink: 0;
-  }
   .vacancies-toolbar {
     grid-template-columns: 1fr 1fr;
   }
@@ -1110,4 +1104,35 @@ select {
   .vacancy-search {
     grid-column: auto;
   }
+}
+
+.operation-fields-grid .operating-hours-toggle {
+  min-height: 48px;
+}
+.operating-hours-toggle-track {
+  flex-shrink: 0;
+}
+.table-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #00a676;
+  border-radius: 8px;
+  background: #e8f7f1;
+  color: #046c4e;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.table-action-btn:hover {
+  background: #046c4e;
+  color: #fff;
+}
+.table-action-btn:focus-visible {
+  outline: 3px solid #00a676;
+  outline-offset: 3px;
 }

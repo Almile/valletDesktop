@@ -59,7 +59,7 @@ export const apiService = {
     try {
       const perfil = await this.getPerfil(data.idToken);
 
-      const eAdmin = perfil.tipo_user === "superadmin"
+      const eAdmin = perfil.tipo_user === "superadmin";
 
       if (!eAdmin) {
         this.clearSession();
@@ -90,7 +90,9 @@ export const apiService = {
   },
 
   async getEstacionamentos() {
-    return this.request("/estacionamento/listar_estacionamentos_usuario", { method: "GET" });
+    return this.request("/estacionamento/listar_estacionamentos_usuario", {
+      method: "GET",
+    });
   },
 
   async criarEstacionamento(dados) {
@@ -98,6 +100,16 @@ export const apiService = {
       method: "POST",
       body: JSON.stringify(dados),
     });
+  },
+
+  async atualizarEstacionamento(id, dados) {
+    return this.request(
+      `/estacionamento/atualizar_estacionamento/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(dados),
+      },
+    );
   },
 
   async getAdmins() {
@@ -114,11 +126,15 @@ export const apiService = {
     });
   },
   async getEstacionamentoPorId(id) {
-    return this.request(`/estacionamento/buscar_estacionamento/${id}`, { method: "GET" });
+    return this.request(`/estacionamento/buscar_estacionamento/${id}`, {
+      method: "GET",
+    });
   },
 
   async getVagasEstacionamento(estacionamentoId) {
-    return this.request(`/vaga/estacionamento/${estacionamentoId}`, { method: "GET" });
+    return this.request(`/vaga/estacionamento/${estacionamentoId}`, {
+      method: "GET",
+    });
   },
 
   async criarVaga(dados) {
@@ -146,4 +162,3 @@ export const apiService = {
     return this.request(`/vaga/excluir/${vagaId}`, { method: "DELETE" });
   },
 };
-
