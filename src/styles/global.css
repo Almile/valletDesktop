@@ -480,9 +480,55 @@ select {
   color: var(--dark);
   font-size: 15px;
 }
+.operating-hours-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dark);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.operating-hours-toggle:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 4px;
+}
+.operating-hours-toggle-track {
+  display: flex;
+  align-items: center;
+  width: 44px;
+  height: 26px;
+  padding: 3px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #6b7280;
+}
+.operating-hours-toggle-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+}
+.operating-hours-toggle[aria-checked="true"] .operating-hours-toggle-track {
+  background: var(--green);
+}
+.operating-hours-toggle[aria-checked="true"] .operating-hours-toggle-thumb {
+  transform: translateX(18px);
+}
+.operating-hours-description {
+  margin: 4px 0 18px;
+  color: var(--muted);
+  font-size: 14px;
+}
 .operation-fields-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(200px, 1fr);
+  align-items: end;
   gap: 18px;
 }
 .currency-input {
@@ -970,6 +1016,12 @@ select {
   }
   .operation-fields-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .operation-fields-grid .operating-hours-toggle {
+    min-height: 48px;
+  }
+  .operating-hours-toggle-track {
+    flex-shrink: 0;
   }
   .vacancies-toolbar {
     grid-template-columns: 1fr 1fr;

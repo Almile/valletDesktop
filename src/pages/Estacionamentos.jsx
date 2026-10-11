@@ -88,7 +88,9 @@ export default function Estacionamentos() {
                     <td>{est.cnpj}</td>
                     <td>{est.quantidadeVagasTotal || est.vagas_total || 0}</td>
                     <td>
-                      {est.horarioAbertura}h às {est.horarioFechamento}h
+                      {est.funciona24h === true
+                        ? "24 horas"
+                        : `${est.horarioAbertura}h às ${est.horarioFechamento}h`}
                     </td>
                     <td>
                       <span className="badge badge-success">Ativo</span>
@@ -114,6 +116,7 @@ export function CadastroEstacionamento() {
   const [possuiVagasPcd, setPossuiVagasPcd] = useState(false);
   const [possuiVagasIdoso, setPossuiVagasIdoso] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [funciona24h, setFunciona24h] = useState(false);
   const [admins, setAdmins] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -160,8 +163,9 @@ export function CadastroEstacionamento() {
       quantidadeVagasIdoso: possuiVagasIdoso ? Number(data.quantidadeVagasIdoso || 0) : 0,
 
       valorHora: parseFloat(data.valorHora),
-      horarioAbertura: data.horarioAbertura,
-      horarioFechamento: data.horarioFechamento,
+      funciona24h,
+      horarioAbertura: funciona24h ? "00:00" : data.horarioAbertura,
+      horarioFechamento: funciona24h ? "00:00" : data.horarioFechamento,
     };
 
     try {
@@ -193,7 +197,11 @@ export function CadastroEstacionamento() {
           </div>
         )}
 
-        <form className="registration-form" onSubmit={handleSubmit}>
+        <form
+          className="registration-form"
+          onSubmit={handleSubmit}
+          onReset={() => setFunciona24h(false)}
+        >
           <fieldset className="form-section">
             <legend>Informações principais</legend>
             <div className="form-grid">
@@ -407,15 +415,48 @@ export function CadastroEstacionamento() {
                 </label>
                 <label className="form-field">
                   <span>Horário de abertura</span>
-                  <input name="horarioAbertura" type="time" required />
+                  <input
+                    name="horarioAbertura"
+                    type="time"
+                    disabled={funciona24h}
+                    required={!funciona24h}
+                  />
                 </label>
                 <label className="form-field">
                   <span>Horário de fechamento</span>
-                  <input name="horarioFechamento" type="time" required />
+                  <input
+                    name="horarioFechamento"
+                    type="time"
+                    disabled={funciona24h}
+                    required={!funciona24h}
+                  />
                 </label>
+                <div className="form-field">
+                  <span>Funcionamento 24h</span>
+
+                  <button
+                    className="operating-hours-toggle"
+                    type="button"
+                    role="switch"
+                    aria-checked={funciona24h}
+                    aria-describedby="funcionamento-descricao"
+                    onClick={() => setFunciona24h((ativo) => !ativo)}
+                  >
+                    <span className="operating-hours-toggle-track" aria-hidden="true">
+                      <span className="operating-hours-toggle-thumb" />
+                    </span>
+                    <span>Aberto 24 horas</span>
+                  </button>
+                </div>
               </div>
             </div>
           </fieldset>
+
+          <p id="funcionamento-descricao" className="operating-hours-description">
+            {funciona24h
+              ? "Aberto todos os dias, durante 24 horas."
+              : "Informe os horários de abertura e fechamento."}
+          </p>
 
           <footer className="form-actions">
             <Link className="cancel-link" to="/estacionamentos">

@@ -212,14 +212,23 @@ export default function DetalhesEstacionamento() {
           <section className="details-section">
             <h3>Funcionamento e valores</h3>
             <dl className="details-grid details-grid--compact">
-              <div>
-                <dt>Abertura</dt>
-                <dd>{estacionamento?.horarioAbertura || "08:00"}</dd>
-              </div>
-              <div>
-                <dt>Fechamento</dt>
-                <dd>{estacionamento?.horarioFechamento || "18:00"}</dd>
-              </div>
+              {estacionamento?.funciona24h === true ? (
+                <div>
+                  <dt>Funcionamento</dt>
+                  <dd>24 horas</dd>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <dt>Abertura</dt>
+                    <dd>{estacionamento?.horarioAbertura || "08:00"}</dd>
+                  </div>
+                  <div>
+                    <dt>Fechamento</dt>
+                    <dd>{estacionamento?.horarioFechamento || "18:00"}</dd>
+                  </div>
+                </>
+              )}
               <div>
                 <dt>Valor base por hora</dt>
                 <dd>R$ {parseFloat(estacionamento?.valorHora || 0).toFixed(2)}</dd>
