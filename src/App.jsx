@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import DetalhesEstacionamento from "./pages/DetalhesEstacionamento";
 import Estacionamentos from "./pages/Estacionamentos";
 import Gerentes from "./pages/Gerentes";
+import DetalhesGerente from "./pages/DetalhesGerente";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import { CadastroEstacionamento } from "./pages/Estacionamentos";
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/estacionamentos" element={<Estacionamentos />} />
         <Route path="/gerentes" element={<Gerentes />} />
+        <Route path="/gerentes/:gerenteId" element={<DetalhesGerente />} />
         <Route
           path="/estacionamentos/novo"
           element={<CadastroEstacionamento />}

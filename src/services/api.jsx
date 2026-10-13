@@ -115,8 +115,13 @@ export const apiService = {
   async getAdmins() {
     return this.request("/usuarios?tipo=admin", { method: "GET" });
   },
+  
   async getGerentes() {
     return this.request("/usuarios?tipo=admin", { method: "GET" });
+  },
+
+  async getGerentePorId(uid) {
+    return this.request(`/usuarios/${encodeURIComponent(uid)}`, { method: "GET" });
   },
 
   async criarGerente(dados) {
