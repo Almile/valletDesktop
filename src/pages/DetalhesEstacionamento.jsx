@@ -573,6 +573,17 @@ export default function DetalhesEstacionamento() {
                 </select>
               </div>
               <div style={formGroupStyle}>
+                <label>Preço:</label>
+                <input
+                  type="number"
+                  required
+                  value={loteVagas.preco}
+                  onChange={(e) =>
+                    setLoteVagas({ ...loteVagas, preco: e.target.value })
+                  }
+                />
+              </div>
+              <div style={formGroupStyle}>
                 <label>Localização / Setor Padrão:</label>
                 <input
                   type="text"
