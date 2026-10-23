@@ -222,19 +222,6 @@ export function CadastroGerente() {
           <fieldset className="form-section">
             <legend>Vínculo e acesso</legend>
             <div className="form-grid">
-              <label className="form-field form-field--full">
-                <span>Estacionamento</span>
-                <select name="estacionamentoId" defaultValue="" required>
-                  <option value="" disabled>
-                    Selecione um estacionamento cadastrado
-                  </option>
-                  {estacionamentos.map((est) => (
-                    <option key={est.id || est.cnpj} value={est.id || est.cnpj}>
-                      {est.nome} - {est.endereco?.cidade || est.cidade || "Sem localização"}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <label className="form-field">
                 <span>Senha provisória</span>
                 <input
