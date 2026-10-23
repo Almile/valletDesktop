@@ -42,7 +42,11 @@ export const apiService = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || "Erro na requisição com o servidor.");
+      const detalhe = errorData.detail;
+      const mensagem = Array.isArray(detalhe)
+        ? detalhe.map((erro) => erro.msg || "Campo inválido").join("; ")
+        : typeof detalhe === "string" ? detalhe : "Erro na requisição com o servidor.";
+      throw new Error(mensagem);
     }
 
     return response.json();
