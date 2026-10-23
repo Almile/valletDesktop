@@ -1,0 +1,166 @@
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
+import { apiService } from "../services/api";
+import { applyMask, formatPhone } from "../utils/inputMasks";
+
+export function CadastroGerenteEstacionamento() {
+  const navigate = useNavigate();
+  const [estacionamentos, setEstacionamentos] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    async function carregarEstacionamentos() {
+      try {
+        const lista = await apiService.getEstacionamentos();
+        setEstacionamentos(lista || []);
+      } catch (err) {
+        console.warn("Não foi possível carregar os estacionamentos:", err);
+      }
+    }
+    carregarEstacionamentos();
+  }, []);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setErrorMessage("");
+
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData.entries());
+
+    if (data.senha !== data.confirmacaoSenha) {
+      setErrorMessage("As senhas informadas não coincidem.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const payload = {
+      nome: data.nome,
+      email: data.email,
+      telefone: data.telefone,
+      senha: data.senha,
+      tipo_user: "admin",
+      cargo: "Gerente",
+    };
+
+    try {
+      await apiService.criarGerente(payload);
+      alert("Gerente cadastrado com sucesso!");
+      navigate("/estacionamentos/novo");
+    } catch (err) {
+      setErrorMessage(err.message || "Erro ao cadastrar gerente.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Layout title="Cadastrar gerente">
+      <section className="form-card">
+        <header className="form-header">
+          <div>
+            <h2>Dados do usuário gerente</h2>
+            <p>
+              Crie o acesso do gerente e associe-o ao estacionamento
+              responsável.
+            </p>
+          </div>
+        </header>
+
+        {errorMessage && (
+          <div style={{ color: "red", backgroundColor: "#ffe6e6", padding: "12px", borderRadius: "6px", margin: "16px 24px" }}>
+            {errorMessage}
+          </div>
+        )}
+
+        <form className="registration-form" onSubmit={handleSubmit}>
+          <fieldset className="form-section">
+            <legend>Informações pessoais</legend>
+            <div className="form-grid">
+              <label className="form-field form-field--wide">
+                <span>Nome completo</span>
+                <input
+                  name="nome"
+                  type="text"
+                  placeholder="Nome do gerente"
+                  autoComplete="name"
+                  required
+                />
+              </label>
+              <label className="form-field">
+                <span>Cargo</span>
+                <input name="cargo" type="text" value="Gerente" readOnly />
+              </label>
+              <label className="form-field form-field--wide">
+                <span>E-mail</span>
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="gerente@empresa.com"
+                  autoComplete="email"
+                  required
+                />
+              </label>
+              <label className="form-field">
+                <span>Telefone</span>
+                <input
+                  name="telefone"
+                  type="tel"
+                  placeholder="(00) 00000-0000"
+                  autoComplete="tel"
+                  maxLength="15"
+                  onChange={applyMask(formatPhone)}
+                  required
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset className="form-section">
+            <legend>Vínculo e acesso</legend>
+            <div className="form-grid">
+              <label className="form-field">
+                <span>Senha provisória</span>
+                <input
+                  name="senha"
+                  type="password"
+                  minLength="6"
+                  placeholder="Mínimo de 6 caracteres"
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+              <label className="form-field">
+                <span>Confirmar senha</span>
+                <input
+                  name="confirmacaoSenha"
+                  type="password"
+                  minLength="6"
+                  placeholder="Digite a senha novamente"
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <footer className="form-actions">
+            <Link className="cancel-link" to="/estacionamentos/novo">
+              Cancelar
+            </Link>
+            <button className="secondary-action" type="reset">
+              Limpar
+            </button>
+            <button className="primary-button" type="submit" disabled={submitting}>
+              {submitting ? "Cadastrando..." : "Cadastrar gerente"}
+            </button>
+          </footer>
+        </form>
+      </section>
+    </Layout>
+  );
+}
+
+export default CadastroGerenteEstacionamento;

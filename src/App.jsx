@@ -7,6 +7,7 @@ import Gerentes from "./pages/Gerentes";
 import DetalhesGerente from "./pages/DetalhesGerente";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import { CadastroGerenteEstacionamento } from "./pages/CadastroGerenteEstacionamento";
 import { CadastroEstacionamento } from "./pages/Estacionamentos";
 import { CadastroGerente } from "./pages/Gerentes";
 export default function App() {
@@ -21,6 +22,10 @@ export default function App() {
         <Route path="/estacionamentos" element={<Estacionamentos />} />
         <Route path="/gerentes" element={<Gerentes />} />
         <Route path="/gerentes/:gerenteId" element={<DetalhesGerente />} />
+        <Route
+          path="/estacionamentos/novo/gerente"
+          element={<CadastroGerenteEstacionamento />}
+        />
         <Route
           path="/estacionamentos/novo"
           element={<CadastroEstacionamento />}

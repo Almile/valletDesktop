@@ -120,6 +120,10 @@ export const apiService = {
     return this.request("/usuarios?tipo=admin", { method: "GET" });
   },
   
+  async getAdminsDisponiveis() {
+    return this.request("/usuarios/listar_admins_disponiveis", { method: "GET" });
+  },
+  
   async getGerentes() {
     return this.request("/usuarios?tipo=admin", { method: "GET" });
   },

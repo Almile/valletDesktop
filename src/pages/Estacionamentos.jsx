@@ -232,7 +232,7 @@ export function CadastroEstacionamento() {
   useEffect(() => {
     async function carregarAdmins() {
       try {
-        const listaAdmins = await apiService.getAdmins();
+        const listaAdmins = await apiService.getAdminsDisponiveis();
         setAdmins(listaAdmins || []);
       } catch (err) {
         console.warn(
@@ -253,7 +253,6 @@ export function CadastroEstacionamento() {
     dialogRef.current?.close();
     setModalVagas(null);
     setErroVagas("");
-    // Também funciona quando a linha editada muda de página ou é renderizada de novo.
     requestAnimationFrame(() => {
       const botao = acionadorModal.current;
       if (botao?.isConnected) botao.focus();
@@ -399,6 +398,25 @@ export function CadastroEstacionamento() {
     };
   }, [estacionamentoId]);
 
+  useEffect(() => {
+  const rascunho = sessionStorage.getItem("rascunhoEstacionamento");
+  if (rascunho && !editando) {
+    const data = JSON.parse(rascunho);
+    Object.entries(data).forEach(([name, value]) => {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input) {
+        if (input.type === "checkbox" || input.type === "radio") {
+          input.checked = value === "on" || value === true;
+        } else {
+          input.value = value;
+        }
+      }
+    });
+    if (data.possuiVagasPcd) setPossuiVagasPcd(data.possuiVagasPcd === "sim");
+    if (data.possuiVagasIdoso) setPossuiVagasIdoso(data.possuiVagasIdoso === "sim");
+  }
+}, [editando]);
+
   function valorInicial(campo) {
     const est = dadosIniciais || {};
     const endereco =
@@ -429,7 +447,7 @@ export function CadastroEstacionamento() {
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
-
+    // TO-DO - enviar vagas cadastradas
     const payload = {
       nome: data.nome.trim(),
       cnpj: data.cnpj,
@@ -464,6 +482,8 @@ export function CadastroEstacionamento() {
       } else {
         await apiService.criarEstacionamento(payload);
       }
+        sessionStorage.removeItem("rascunhoEstacionamento");
+
       alert(
         editando
           ? "Estacionamento atualizado com sucesso!"
@@ -511,11 +531,18 @@ export function CadastroEstacionamento() {
         )}
 
         <form
-          ref={formularioRef}
           className="registration-form"
           onSubmit={handleSubmit}
           key={estacionamentoId || "novo"}
-          onReset={() => restaurarOpcoes(dadosIniciais)}
+          onReset={() => {
+            restaurarOpcoes(dadosIniciais);
+            sessionStorage.removeItem("rascunhoEstacionamento");
+          }}
+          onChange={(e) => {
+            const formData = new FormData(e.currentTarget);
+            const data = Object.fromEntries(formData.entries());
+            sessionStorage.setItem("rascunhoEstacionamento", JSON.stringify(data));
+          }}
         >
           <fieldset className="form-section">
             <legend>Dados do estacionamento</legend>
@@ -534,29 +561,38 @@ export function CadastroEstacionamento() {
               <label className="form-field">
                 <span>Administrador responsável</span>
                 {admins.length > 0 ? (
-                  <select
-                    name="adminUid"
-                    required
-                    defaultValue={dadosIniciais?.adminUid || ""}
-                  >
-                    <option value="" disabled>
-                      Selecione um administrador
-                    </option>
-                    {dadosIniciais?.adminUid &&
-                      !admins.some(
-                        (adm) => (adm.uid || adm.id) === dadosIniciais.adminUid,
-                      ) && (
-                        <option value={dadosIniciais.adminUid}>
-                          {dadosIniciais.adminEmail || dadosIniciais.adminUid}
+                    <>
+                      <select
+                        name="adminUid"
+                        required
+                        defaultValue={dadosIniciais?.adminUid || ""}
+                      >
+                        <option value="" disabled>
+                          Administradores Disponíveis
                         </option>
-                      )}
-                    {admins.map((adm) => (
-                      <option key={adm.uid || adm.id} value={adm.uid || adm.id}>
-                        {adm.nome || adm.email} ({adm.email})
-                      </option>
-                    ))}
-                  </select>
-                ) : (
+
+                        {dadosIniciais?.adminUid &&
+                          !admins.some(
+                            (adm) => (adm.uid || adm.id) === dadosIniciais.adminUid
+                          ) && (
+                            <option value={dadosIniciais.adminUid}>
+                              {dadosIniciais.adminEmail || dadosIniciais.adminUid}
+                            </option>
+                          )}
+                        {admins.map((adm) => (
+                          <option key={adm.uid || adm.id} value={adm.uid || adm.id}>
+                            {adm.nome || adm.email} ({adm.email})
+                          </option>
+                        ))}
+                      </select>
+                         {/* TO-DO -  Alinhar o botão ou fazer o que voce quiser */}
+                      <div className="field-action-link">
+                        <Link className="primary-link" to="/estacionamentos/novo/gerente">
+                          +
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
                   <input
                     name="adminUid"
                     type="text"
@@ -781,6 +817,7 @@ export function CadastroEstacionamento() {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* TO-DO atualmente ordenando por ultimo adicionado, ordenar por ordem alfabética */}
                     {vagasVisiveis.length ? (
                       vagasVisiveis.map((vaga, indice) => (
                         <tr key={vaga.numero}>
