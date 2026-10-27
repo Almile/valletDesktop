@@ -581,7 +581,13 @@ export function CadastroEstacionamento() {
               <label className="form-field">
                 <span>Administrador responsável</span>
                 {admins.length > 0 ? (
-                    <>
+                    <div className="selectebotao">
+                       {/* TO-DO -  Alinhar o botão ou fazer o que voce quiser */}
+                      <div className="field-action-link">
+                        <Link class="parking-outline-button-admin" to="/estacionamentos/novo/gerente">
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                        </Link>
+                      </div>
                       <select
                         name="adminUid"
                         required
@@ -605,13 +611,7 @@ export function CadastroEstacionamento() {
                           </option>
                         ))}
                       </select>
-                         {/* TO-DO -  Alinhar o botão ou fazer o que voce quiser */}
-                      <div className="field-action-link">
-                        <Link className="primary-link" to="/estacionamentos/novo/gerente">
-                          +
-                        </Link>
-                      </div>
-                    </>
+                    </div>
                   ) : (
                   <input
                     name="adminUid"
@@ -676,6 +676,7 @@ export function CadastroEstacionamento() {
                   type="text"
                   placeholder="Rua, avenida ou travessa"
                   value={logradouro}
+                  onChange={setLogradouro}
                   required
                   defaultValue={valorInicial("logradouro")}
                 />
@@ -706,6 +707,7 @@ export function CadastroEstacionamento() {
                   type="text"
                   placeholder="Bairro"
                   value={bairro}
+                  onChange={setBairro}
                   required
                   defaultValue={valorInicial("bairro")}
                 />
@@ -717,6 +719,7 @@ export function CadastroEstacionamento() {
                   type="text"
                   placeholder="Cidade"
                   value={cidade}
+                  onChange={setCidade}
                   required
                   defaultValue={valorInicial("cidade")}
                 />
@@ -729,6 +732,7 @@ export function CadastroEstacionamento() {
                   maxLength="2"
                   placeholder="SP"
                   value={uf}
+                  onChange={setUf}
                   required
                   defaultValue={valorInicial("uf")}
                 />

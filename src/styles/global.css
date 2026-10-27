@@ -1516,3 +1516,36 @@ select {
   font-weight: 600;
   letter-spacing: -0.4px;
 }
+
+.selectebotao{
+  display: flex;
+  position: relative;
+    border: 1px solid var(--gray);
+
+    border-radius: 6px;
+    padding: 0 10px;
+}
+
+.selectebotao select{
+  border: none;
+}
+
+.selectebotao select:focus{
+  border: none;
+  box-shadow: none
+}
+.parking-outline-button-admin {
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 6px;
+  background: white;
+  color: #04563f;
+  padding: 9px 13px;
+  min-height: 38px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
