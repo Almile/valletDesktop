@@ -192,6 +192,11 @@ export function CadastroEstacionamento() {
   const [paginaVagas, setPaginaVagas] = useState(1);
   const dialogRef = useRef(null);
   const acionadorModal = useRef(null);
+  const [cep, setCep] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [uf, setUf] = useState("");
+  const [logradouro, setLogradouro] = useState("")
+  const [cidade, setCidade] = useState("")
   const formularioRef = useRef(null);
   const vagasPorPagina = 5;
   const totalPaginas = Math.max(
@@ -510,6 +515,21 @@ export function CadastroEstacionamento() {
     );
   }
 
+  async function findCEP(cep) {
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json`);
+      const data = await res.json();
+      console.log(data);
+      setCidade(data.localidade)
+      setBairro(data.bairro)
+      setLogradouro(data.logradouro)
+      setUf(data.uf)
+      return
+    } catch (err) {
+      console.warn("Cep não encontrado", err);
+    }
+  }
+
   return (
     <Layout
       title={editando ? "Editar estacionamento" : "Cadastrar estacionamento"}
@@ -639,10 +659,12 @@ export function CadastroEstacionamento() {
                 <input
                   name="cep"
                   type="text"
+                  value={cep}
                   inputMode="numeric"
                   placeholder="00000-000"
                   maxLength="9"
-                  onChange={applyMask(formatCep)}
+                  onChange={(e) => { setCep(e.target.value); applyMask(formatCep); }}
+                  onBlur={()=>{findCEP(cep)}}
                   required
                   defaultValue={valorInicial("cep")}
                 />
@@ -653,6 +675,7 @@ export function CadastroEstacionamento() {
                   name="logradouro"
                   type="text"
                   placeholder="Rua, avenida ou travessa"
+                  value={logradouro}
                   required
                   defaultValue={valorInicial("logradouro")}
                 />
@@ -682,6 +705,7 @@ export function CadastroEstacionamento() {
                   name="bairro"
                   type="text"
                   placeholder="Bairro"
+                  value={bairro}
                   required
                   defaultValue={valorInicial("bairro")}
                 />
@@ -692,6 +716,7 @@ export function CadastroEstacionamento() {
                   name="cidade"
                   type="text"
                   placeholder="Cidade"
+                  value={cidade}
                   required
                   defaultValue={valorInicial("cidade")}
                 />
@@ -703,6 +728,7 @@ export function CadastroEstacionamento() {
                   type="text"
                   maxLength="2"
                   placeholder="SP"
+                  value={uf}
                   required
                   defaultValue={valorInicial("uf")}
                 />
