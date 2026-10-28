@@ -120,6 +120,15 @@ export default function DetalhesEstacionamento() {
     }
   }
 
+  async function excluir_estacionamento(estacionamentoId) {
+    try {
+        const requisicao = await apiService.excluirEstacionamento(estacionamentoId);
+        alert("Estacionamento excluido com sucesso!")
+      } catch (err) {
+        console.warn(err)
+      } 
+  }
+
   async function toggleDisponibilidade(vaga) {
     try {
       await apiService.atualizarVaga(vaga.id, { disponivel: !vaga.disponivel });
@@ -165,6 +174,9 @@ export default function DetalhesEstacionamento() {
                 Editar estacionamento
               </Link>
             )}
+
+            <button className="primary-button" type="submit" onClick={()=>{excluir_estacionamento(estacionamentoId)}}>Excluir estacionamento</button>
+
             <Link className="secondary-button" to="/estacionamentos">
               Voltar
             </Link>

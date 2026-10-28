@@ -57,6 +57,14 @@ export default function DetalhesGerente() {
         console.warn(err)
       } 
   }
+  async function reativar_conta(uid) {
+    try {
+        const requisicao = await apiService.reativarGerente(uid);
+        alert("Usuário reativado com sucesso!")
+      } catch (err) {
+        console.warn(err)
+      } 
+  }
   return (
     <Layout title="Detalhes do gerente">
       <section className="details-card">
@@ -125,6 +133,7 @@ export default function DetalhesGerente() {
               </dl>
             </section>
             <button className="primary-button" type="submit" onClick={()=>{desativar_conta(gerente.uid)}}>Desativar usuário</button>
+            <button className="primary-button" type="submit" onClick={()=>{reativar_conta(gerente.uid)}}>Reativar usuário</button>
           </div>
         )}
       </section>

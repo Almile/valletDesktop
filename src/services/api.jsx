@@ -146,9 +146,22 @@ export const apiService = {
     });
   },
 
+  async reativarGerente(uid) {
+    return this.request(`/auth/reativar_conta/${uid}`, {
+      method: "POST",
+      body: JSON.stringify(uid),
+    });
+  },
+
   async getEstacionamentoPorId(id) {
     return this.request(`/estacionamento/buscar_estacionamento/${id}`, {
       method: "GET",
+    });
+  },
+  
+  async excluirEstacionamento(estacionamentoId) {
+    return this.request(`/estacionamento/excluir_estacionamento/${estacionamentoId}`, {
+      method: "DELETE"
     });
   },
 
