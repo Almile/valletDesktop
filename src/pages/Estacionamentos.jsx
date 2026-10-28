@@ -452,7 +452,6 @@ export function CadastroEstacionamento() {
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
-    // TO-DO - enviar vagas cadastradas
     const payload = {
       nome: data.nome.trim(),
       cnpj: data.cnpj,

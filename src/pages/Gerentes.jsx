@@ -18,6 +18,7 @@ export default function Gerentes() {
       setLoading(true);
       const data = await apiService.getGerentes();
       setGerentes(data || []);
+      console.log(data)
     } catch (err) {
       setError(err.message || "Erro ao carregar lista de gerentes.");
     } finally {
@@ -86,7 +87,7 @@ export default function Gerentes() {
                     </td>
                     <td>{gerente.estacionamentoNome || gerente.estacionamentoId || "Geral"}</td>
                     <td>
-                      <span className="badge badge-success">Ativo</span>
+                      <span className="badge badge-success">{gerente.ativo? "Ativo" : "Desativado" }</span>
                     </td>
                     <td>
                       <Link to={`/gerentes/${gerente.uid}`} className="table-action-btn">

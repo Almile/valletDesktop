@@ -49,7 +49,14 @@ export default function DetalhesGerente() {
       </Layout>
     );
   }
-
+  async function desativar_conta(uid) {
+    try {
+        const requisicao = await apiService.desativarGerente(uid);
+        alert("Usuário desativado com sucesso!")
+      } catch (err) {
+        console.warn(err)
+      } 
+  }
   return (
     <Layout title="Detalhes do gerente">
       <section className="details-card">
@@ -117,6 +124,7 @@ export default function DetalhesGerente() {
                 </div>
               </dl>
             </section>
+            <button className="primary-button" type="submit" onClick={()=>{desativar_conta(gerente.uid)}}>Desativar usuário</button>
           </div>
         )}
       </section>

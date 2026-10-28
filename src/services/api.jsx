@@ -138,6 +138,14 @@ export const apiService = {
       body: JSON.stringify(dados),
     });
   },
+
+  async desativarGerente(uid) {
+    return this.request(`/auth/desativar_conta/${uid}`, {
+      method: "POST",
+      body: JSON.stringify(uid),
+    });
+  },
+
   async getEstacionamentoPorId(id) {
     return this.request(`/estacionamento/buscar_estacionamento/${id}`, {
       method: "GET",
