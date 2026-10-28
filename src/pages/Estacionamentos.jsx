@@ -390,6 +390,20 @@ export function CadastroEstacionamento() {
         if (!ativo) return;
         setDadosIniciais(est);
         restaurarOpcoes(est);
+        // Preenche os estados de endereço
+        if (est.endereco && typeof est.endereco === "object") {
+          setCep(est.endereco.cep || "");
+          setLogradouro(est.endereco.logradouro || "");
+          setBairro(est.endereco.bairro || "");
+          setCidade(est.endereco.cidade || est.endereco.localidade || "");
+          setUf(est.endereco.uf || "");
+        } else if (typeof est.endereco === "string") {
+          setLogradouro(est.endereco);
+          setCep(est.cep || "");
+          setBairro(est.bairro || "");
+          setCidade(est.cidade || "");
+          setUf(est.uf || "");
+        }
       })
       .catch((err) => {
         if (ativo)
@@ -402,25 +416,28 @@ export function CadastroEstacionamento() {
       ativo = false;
     };
   }, [estacionamentoId]);
-
+    
   useEffect(() => {
-  const rascunho = sessionStorage.getItem("rascunhoEstacionamento");
-  if (rascunho && !editando) {
-    const data = JSON.parse(rascunho);
-    Object.entries(data).forEach(([name, value]) => {
-      const input = document.querySelector(`[name="${name}"]`);
-      if (input) {
-        if (input.type === "checkbox" || input.type === "radio") {
-          input.checked = value === "on" || value === true;
-        } else {
-          input.value = value;
+    const rascunho = sessionStorage.getItem("rascunhoEstacionamento");
+    if (rascunho && !editando) {
+      const data = JSON.parse(rascunho);
+      Object.entries(data).forEach(([name, value]) => {
+        const input = document.querySelector(`[name="${name}"]`);
+        if (input) {
+          if (input.type === "checkbox" || input.type === "radio") {
+            input.checked = value === "on" || value === true;
+          } else {
+            input.value = value;
+          }
         }
-      }
-    });
-    if (data.possuiVagasPcd) setPossuiVagasPcd(data.possuiVagasPcd === "sim");
-    if (data.possuiVagasIdoso) setPossuiVagasIdoso(data.possuiVagasIdoso === "sim");
-  }
-}, [editando]);
+      });
+      if (data.cep) setCep(data.cep);
+      if (data.logradouro) setLogradouro(data.logradouro);
+      if (data.bairro) setBairro(data.bairro);
+      if (data.cidade) setCidade(data.cidade);
+      if (data.uf) setUf(data.uf);
+    }
+  }, [editando]);
 
   function valorInicial(campo) {
     const est = dadosIniciais || {};
