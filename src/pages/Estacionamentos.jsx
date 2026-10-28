@@ -663,7 +663,7 @@ export function CadastroEstacionamento() {
                   inputMode="numeric"
                   placeholder="00000-000"
                   maxLength="9"
-                  onChange={(e) => { setCep(e.target.value); applyMask(formatCep); }}
+                  onChange={(e) => { applyMask(formatCep)(e); setCep(e.target.value);}}
                   onBlur={()=>{findCEP(cep)}}
                   required
                   defaultValue={valorInicial("cep")}
