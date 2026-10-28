@@ -132,6 +132,7 @@ export default function DetalhesGerente() {
                 </div>
               </dl>
             </section>
+            {/* DEIXAR APENAS O BOTÃO REFERENTE AO USUARIO ATIVO */}
             <button className="primary-button" type="submit" onClick={()=>{desativar_conta(gerente.uid)}}>Desativar usuário</button>
             <button className="primary-button" type="submit" onClick={()=>{reativar_conta(gerente.uid)}}>Reativar usuário</button>
           </div>

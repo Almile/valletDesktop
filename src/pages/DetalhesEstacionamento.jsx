@@ -174,7 +174,7 @@ export default function DetalhesEstacionamento() {
                 Editar estacionamento
               </Link>
             )}
-
+            {/* TO-DO  mudar a aprencia e local do botão de excluir estacionamento*/}
             <button className="primary-button" type="submit" onClick={()=>{excluir_estacionamento(estacionamentoId)}}>Excluir estacionamento</button>
 
             <Link className="secondary-button" to="/estacionamentos">
