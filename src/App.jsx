@@ -21,24 +21,17 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/estacionamentos" element={<Estacionamentos />} />
         <Route path="/gerentes" element={<Gerentes />} />
+        
         <Route path="/gerentes/:gerenteId" element={<DetalhesGerente />} />
-        <Route
-          path="/estacionamentos/novo/gerente"
-          element={<CadastroGerenteEstacionamento />}
-        />
-        <Route
-          path="/estacionamentos/novo"
-          element={<CadastroEstacionamento />}
-        />
-        <Route
-          path="/estacionamentos/:estacionamentoId/editar"
-          element={<CadastroEstacionamento />}
-        />
-        <Route
-          path="/estacionamentos/:estacionamentoId"
-          element={<DetalhesEstacionamento />}
-        />
+        <Route path="/estacionamentos/:estacionamentoId" element={<DetalhesEstacionamento />} />
+
+        <Route path="/estacionamentos/novo/gerente" element={<CadastroGerenteEstacionamento />} />
+        
+        <Route path="/estacionamentos/novo" element={<CadastroEstacionamento />} />
         <Route path="/gerentes/novo" element={<CadastroGerente />} />
+
+        <Route path="/estacionamentos/:estacionamentoId/editar" element={<CadastroEstacionamento />} />
+        <Route path="/gerentes/:gerenteId/editar" element={<CadastroGerente />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

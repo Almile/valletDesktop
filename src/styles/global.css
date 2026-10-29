@@ -36,19 +36,34 @@
 
 :root {
   font-family: "Poppins", "Segoe UI", Arial, sans-serif;
-  color: #121212;
-  background: #f5f5f5;
-  --dark: #046c4e;
-  --green: #00a676;
-  --soft: #e7f6f1;
-  --gray: #d1d1d1;
-  --muted: #6f7774;
+  
+  /* Nova Paleta Vallet Desktop */
+  --main-color: #3B5042;         /* Principal */
+  --secondary-color: #637365;    /* Secundária */
+  --support-mid: #97A697;        /* Apoio intermediário */
+  --support-light: #CBD9C5;      /* Apoio claro */
+  --bg-main: #F5F5F5;            /* Fundo geral */
+  --surface: #FFFFFF;            /* Superfícies e campos */
+  --text-main: #17241C;          /* Texto principal */
+  --border-light: #DEE4DC;       /* Bordas e divisórias discretas */
+  
+  /* Mapeamento de variáveis legado para evitar quebra em telas não alteradas */
+  --dark: var(--main-color);
+  --green: var(--main-color);
+  --soft: var(--support-light);
+  --gray: var(--border-light);
+  --muted: var(--secondary-color);
+  
+  color: var(--text-main);
+  background: var(--bg-main);
 }
 * {
   box-sizing: border-box;
 }
 body {
   margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
 }
 button,
 input,
@@ -75,19 +90,19 @@ select {
 }
 .section-label {
   margin: 0 0 10px;
-  color: var(--green);
-  font-size: 12px;
+  color: var(--text-main);
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 1.8px;
 }
 .muted {
-  color: var(--muted);
+  color: var(--secondary-color);
 }
 .login-layout {
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(400px, 0.9fr) minmax(480px, 1.1fr);
-  background: #fff;
+  background: var(--surface);
 }
 .login-presentation {
   position: relative;
@@ -97,7 +112,7 @@ select {
   justify-content: space-between;
   overflow: hidden;
   color: #fff;
-  background: linear-gradient(145deg, #034b39, var(--dark));
+  background: #3B5042
 }
 .login-presentation:after {
   position: absolute;
@@ -128,7 +143,7 @@ select {
 .feature-list {
   z-index: 1;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 2px;
 }
@@ -147,7 +162,7 @@ select {
 .login-form > label {
   display: block;
   margin: 19px 0 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 .login-form input[type="email"],
@@ -156,13 +171,13 @@ select {
   width: 100%;
   height: 52px;
   padding: 0 15px;
-  border: 1px solid var(--gray);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   outline: none;
 }
 .login-form input:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(0, 166, 118, 0.13);
+  border-color: var(--support-mid);
+  box-shadow: 0 0 0 3px rgba(151, 166, 151, 0.13);
 }
 .password-input {
   position: relative;
@@ -179,7 +194,7 @@ select {
   height: 32px;
   place-items: center;
   border: 0;
-  color: var(--dark);
+  color: var(--main-color);
   background: transparent;
   transform: translateY(-50%);
   cursor: pointer;
@@ -198,11 +213,11 @@ select {
   margin: 16px 0 26px;
   align-items: center;
   justify-content: flex-end;
-  font-size: 13px;
+  font-size: 15px;
 }
 .text-button {
   border: 0;
-  color: var(--dark);
+  color: var(--main-color);
   background: transparent;
   font-weight: 700;
 }
@@ -210,10 +225,10 @@ select {
   width: 100%;
   min-height: 48px;
   padding: 0 22px;
-  border: 1px solid var(--dark);
+  border: 1px solid var(--main-color);
   border-radius: 10px;
   color: #fff;
-  background: var(--dark);
+  background: var(--main-color);
   font-weight: 600;
   cursor: pointer;
 }
@@ -224,12 +239,12 @@ select {
 .mobile-logo {
   display: none;
   margin-bottom: 45px;
-  color: var(--dark);
+  color: var(--main-color);
 }
 .dashboard-layout {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 248px 1fr;
+  grid-template-columns: 240px 1fr;
 }
 .sidebar {
   position: sticky;
@@ -239,7 +254,7 @@ select {
   padding: 32px 20px;
   flex-direction: column;
   color: #fff;
-  background: var(--dark);
+  background: var(--main-color);
 }
 .sidebar > .brand {
   padding: 0 10px 36px;
@@ -257,35 +272,41 @@ select {
   gap: 12px;
   border: 0;
   border-radius: 9px;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.85);
   background: transparent;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
 }
-.sidebar nav a.active,
-.sidebar nav a:hover,
+.sidebar nav a.active {
+  background: var(--support-light);
+  color: var(--text-main);
+  font-weight: 600;
+}
+.sidebar nav a:hover:not(.active),
 .logout-button:hover {
-  color: #fff;
   background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 .logout-button {
   margin-top: auto;
 }
 .dashboard-content {
   min-width: 0;
-  padding: 36px clamp(28px, 4vw, 64px) 64px;
+  padding: 24px clamp(24px, 4vw, 48px) 64px;
 }
 .dashboard-header {
   display: flex;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   align-items: center;
   justify-content: space-between;
 }
 .dashboard-header h1 {
   margin: 0;
-  font-size: 32px;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-main);
 }
 .administrator-summary {
   display: flex;
@@ -296,7 +317,7 @@ select {
   display: grid;
 }
 .administrator-summary small {
-  color: var(--muted);
+  color: var(--secondary-color);
 }
 .administrator-avatar {
   display: grid;
@@ -305,8 +326,8 @@ select {
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  background: var(--green);
-  font-size: 12px;
+  background: var(--support-mid);
+  font-size: 15px;
   font-weight: 600;
 }
 .welcome-card {
@@ -318,8 +339,8 @@ select {
   gap: 28px;
   border-radius: 18px;
   color: #fff;
-  background: linear-gradient(120deg, var(--dark), #078a65);
-  box-shadow: 0 18px 45px rgba(4, 64, 47, 0.12);
+  background: #3B5042;
+  box-shadow: 0 18px 45px rgba(59, 80, 66, 0.12);
 }
 .welcome-card h2 {
   margin: 0;
@@ -336,10 +357,10 @@ select {
   justify-content: center;
   border-radius: 10px;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
 }
 .light-button {
-  color: var(--dark);
+  color: var(--main-color);
   background: #fff;
 }
 .statistics-grid {
@@ -353,9 +374,9 @@ select {
   display: flex;
   padding: 24px;
   gap: 16px;
-  border: 1px solid #e3e9e7;
+  border: 1px solid var(--border-light);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
 }
 .statistics-grid i,
 .management-grid i {
@@ -365,8 +386,8 @@ select {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 12px;
-  color: var(--dark);
-  background: var(--soft);
+  color: var(--main-color);
+  background: var(--support-light);
   font-style: normal;
   font-weight: 600;
 }
@@ -374,7 +395,7 @@ select {
   display: grid;
 }
 .statistics-grid small {
-  color: var(--muted);
+  color: var(--secondary-color);
 }
 .statistics-grid strong {
   font-size: 26px;
@@ -393,12 +414,12 @@ select {
 }
 .management-grid p {
   min-height: 54px;
-  color: var(--muted);
+  color: var(--secondary-color);
   line-height: 1.55;
 }
 .secondary-button {
-  border: 1px solid var(--dark);
-  color: var(--dark);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
 }
 .empty-state {
   display: grid;
@@ -406,9 +427,9 @@ select {
   padding: 45px;
   place-items: center;
   align-content: center;
-  border: 1px solid #e3e9e7;
+  border: 1px solid var(--border-light);
   border-radius: 18px;
-  background: #fff;
+  background: var(--surface);
   text-align: center;
 }
 .empty-state > span {
@@ -417,8 +438,8 @@ select {
   height: 64px;
   place-items: center;
   border-radius: 18px;
-  color: var(--dark);
-  background: var(--soft);
+  color: var(--main-color);
+  background: var(--support-light);
   font-size: 25px;
 }
 .empty-state h2 {
@@ -426,22 +447,24 @@ select {
 }
 .empty-state p {
   margin: 0 0 25px;
-  color: var(--muted);
+  color: var(--secondary-color);
 }
 .empty-state .primary-button {
   width: auto;
   min-width: 190px;
 }
+
+
+/* ESTILOS LEGADOS PRESERVADOS PARA OUTRAS PÁGINAS (GERENTE/DETALHES) */
 .form-card {
   overflow: hidden;
-  border: 1px solid #e3e9e7;
+  border: 1px solid var(--border-light);
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 14px 35px rgba(4, 64, 47, 0.06);
+  background: var(--surface);
 }
 .form-header {
   padding: 24px 34px 22px;
-  border-bottom: 1px solid #e8eeec;
+  border-bottom: 1px solid var(--border-light);
 }
 .form-header h2 {
   margin: 0 0 8px;
@@ -449,7 +472,7 @@ select {
 }
 .form-header p:last-child {
   margin: 0;
-  color: var(--muted);
+  color: var(--secondary-color);
   line-height: 1.5;
 }
 .registration-form {
@@ -459,11 +482,11 @@ select {
   margin: 0;
   padding: 20px 0 24px;
   border: 0;
-  border-bottom: 1px solid #e8eeec;
+  border-bottom: 1px solid var(--border-light);
 }
 .form-section legend {
   margin-bottom: 10px;
-  color: var(--dark);
+  color: var(--text-main);
   font-size: 18px;
   font-weight: 600;
 }
@@ -483,160 +506,25 @@ select {
 .form-field--full {
   grid-column: 1 / -1;
 }
-.parking-capacity-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-.address-grid {
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-}
-.address-field--cep {
-  grid-column: span 3;
-}
-.address-field--street {
-  grid-column: span 6;
-}
-.address-field--complement {
-  grid-column: span 3;
-}
-.address-field--number {
-  grid-column: span 2;
-}
-.address-field--district,
-.address-field--city {
-  grid-column: span 4;
-}
-.address-field--state {
-  grid-column: span 2;
-}
-.form-subsection {
-  margin-top: 22px;
-}
-.form-subsection h3 {
-  margin: 0 0 12px;
-  color: var(--dark);
-  font-size: 15px;
-}
-.operating-hours-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 44px;
-  padding: 6px 0;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--dark);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.operating-hours-toggle:focus-visible {
-  outline: 3px solid var(--green);
-  outline-offset: 4px;
-}
-.operating-hours-toggle-track {
-  display: flex;
-  align-items: center;
-  width: 44px;
-  height: 26px;
-  padding: 3px;
-  box-sizing: border-box;
-  border-radius: 999px;
-  background: #6b7280;
-}
-.operating-hours-toggle-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fff;
-}
-.operating-hours-toggle[aria-checked="true"] .operating-hours-toggle-track {
-  background: var(--green);
-}
-.operating-hours-toggle[aria-checked="true"] .operating-hours-toggle-thumb {
-  transform: translateX(18px);
-}
-.operating-hours-description {
-  margin: 4px 0 18px;
-  color: var(--muted);
-  font-size: 14px;
-}
-.operation-fields-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(200px, 1fr);
-  align-items: end;
-  gap: 18px;
-}
-.currency-input {
-  display: flex;
-  height: 48px;
-  align-items: center;
-  overflow: hidden;
-  border: 1px solid var(--gray);
-  border-radius: 10px;
-  background: #fff;
-}
-.currency-input:focus-within {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(0, 166, 118, 0.13);
-}
-.currency-prefix {
-  display: grid;
-  width: 48px;
-  height: 100%;
-  flex: 0 0 48px;
-  place-items: center;
-  border-right: 1px solid #e2e7e5;
-  color: var(--muted);
-  background: #f5f7f6;
-  font-size: 14px;
-  font-weight: 700;
-}
-.currency-input input {
-  min-width: 0;
-  width: auto;
-  flex: 1;
-  height: 46px;
-  border: 0;
-  box-shadow: none !important;
-}
-.currency-input input::-webkit-inner-spin-button,
-.currency-input input::-webkit-outer-spin-button {
-  margin: 0;
-  appearance: none;
-}
 .form-field > span {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 500;
 }
 .form-field input,
 .form-field select {
   width: 100%;
   height: 48px;
   padding: 0 14px;
-  border: 1px solid var(--gray);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
-  color: #121212;
-  background: #fff;
+  color: var(--text-main);
+  background: var(--surface);
   outline: none;
 }
 .form-field input:focus,
 .form-field select:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(0, 166, 118, 0.13);
-}
-.form-field input[readonly] {
-  color: var(--muted);
-  background: #f4f7f6;
-}
-.form-field input:disabled {
-  color: #9aa39f;
-  background: #f1f4f3;
-  cursor: not-allowed;
-}
-.form-field small {
-  color: var(--muted);
-  line-height: 1.45;
+  border-color: var(--support-mid);
+  box-shadow: 0 0 0 3px rgba(151, 166, 151, 0.13);
 }
 .form-actions {
   display: flex;
@@ -651,29 +539,28 @@ select {
 .secondary-action {
   min-height: 48px;
   padding: 0 22px;
-  border: 1px solid var(--gray);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
-  color: var(--dark);
-  background: #fff;
-  font-weight: 600;
+  color: var(--text-main);
+  background: var(--surface);
+  font-weight: 500;
   cursor: pointer;
 }
 .cancel-link {
   margin-right: auto;
-  color: var(--muted);
+  color: var(--secondary-color);
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 500;
 }
 .cancel-link:hover {
-  color: var(--dark);
+  color: var(--text-main);
 }
 .list-card {
   overflow: hidden;
-  border: 1px solid #e3e9e7;
+  border: 1px solid var(--border-light);
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 14px 35px rgba(4, 64, 47, 0.06);
+  background: var(--surface);
 }
 .list-header {
   display: flex;
@@ -681,7 +568,7 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border-bottom: 1px solid #e8eeec;
+  border-bottom: 1px solid var(--border-light);
 }
 .list-header h2 {
   margin: 0 0 7px;
@@ -689,7 +576,7 @@ select {
 }
 .list-header p {
   margin: 0;
-  color: var(--muted);
+  color: var(--secondary-color);
 }
 .primary-link {
   display: inline-flex;
@@ -700,10 +587,10 @@ select {
   flex: 0 0 auto;
   border-radius: 10px;
   color: #fff;
-  background: var(--dark);
+  background: var(--main-color);
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
 }
 .table-wrapper {
   overflow-x: auto;
@@ -715,439 +602,509 @@ select {
 }
 .management-table th {
   padding: 14px 22px;
-  color: var(--muted);
-  background: #f7f9f8;
-  font-size: 12px;
-  letter-spacing: 0.35px;
-  text-transform: uppercase;
+  color: var(--secondary-color);
+  background: var(--bg-main);
+  font-size: 15px;
+  font-weight: 500;
 }
 .management-table td {
   padding: 18px 22px;
-  border-top: 1px solid #eef1f0;
+  border-top: 1px solid var(--border-light);
+  color: var(--text-main);
+  font-weight: 400;
 }
-.table-empty-row td {
-  height: 330px;
-  padding: 30px;
+
+
+/* ===== NOVA IDENTIDADE DA PÁGINA "CADASTRAR ESTACIONAMENTO" (vallet-*) ===== */
+
+.vallet-form-container {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 0 auto;
+  box-shadow: none;
 }
-.table-empty-state {
-  display: grid;
-  justify-items: center;
-  text-align: center;
+
+.vallet-section {
+  margin-bottom: 32px;
 }
-.table-empty-state > span {
-  display: grid;
-  width: 56px;
-  height: 56px;
-  margin-bottom: 16px;
-  place-items: center;
-  border-radius: 15px;
-  color: var(--dark);
-  background: var(--soft);
-  font-size: 23px;
-}
-.table-empty-state strong {
-  font-size: 17px;
-}
-.table-empty-state p {
-  margin: 7px 0 0;
-  color: var(--muted);
-}
-.empty-preview-link {
-  margin-top: 18px;
-  color: var(--dark);
-  font-size: 14px;
+
+.vallet-section-title {
+  margin: 0;
+  font-size: 20px;
   font-weight: 600;
+  color: var(--text-main);
 }
-.details-card {
-  overflow: hidden;
-  border: 1px solid #e3e9e7;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 14px 35px rgba(4, 64, 47, 0.06);
+
+.vallet-divider {
+  border: 0;
+  height: 1px;
+  background: var(--border-light);
+  margin: 12px 0 20px;
 }
-.details-header {
+
+/* Grids do Formulário */
+.vallet-grid-row-1 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.vallet-grid-row-2 {
+  display: grid;
+  grid-template-columns: 30% 20% 40% calc(10% - 48px);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.vallet-grid-row-3 {
+  display: grid;
+  grid-template-columns: 40% 12% 24% calc(24% - 48px);
+  gap: 16px;
+}
+
+.vallet-grid-operation {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: end; /* Para alinhar os inputs com o toggle switch */
+}
+
+/* Campos e Inputs */
+.vallet-field {
   display: flex;
-  padding: 28px 32px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vallet-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.vallet-field input,
+.vallet-field select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-main);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vallet-field input:focus,
+.vallet-field select:focus {
+  border-color: var(--support-mid);
+  box-shadow: 0 0 0 2px rgba(151, 166, 151, 0.2);
+}
+
+.vallet-field input:disabled {
+  background: var(--bg-main);
+  color: var(--secondary-color);
+  cursor: not-allowed;
+}
+
+/* Wrapper do Administrador (Botão + Select) */
+.vallet-admin-wrapper {
+  display: flex;
+  gap: 8px;
+  height: 40px;
+}
+
+.vallet-add-admin-btn {
+  flex: 0 0 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.vallet-add-admin-btn:hover {
+  background: var(--bg-main);
+}
+
+.vallet-admin-wrapper select {
+  flex: 1;
+  height: 40px;
+}
+
+/* Toggle Switch 24 horas */
+.vallet-field-switch {
+  height: 40px; 
+  display: flex;
+  align-items: center;
+}
+
+.vallet-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.vallet-toggle-track {
+  display: flex;
+  align-items: center;
+  width: 44px;
+  height: 24px;
+  padding: 3px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--border-light);
+  transition: background 0.2s;
+}
+
+.vallet-toggle-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 0.2s;
+}
+
+.vallet-toggle[aria-checked="true"] .vallet-toggle-track {
+  background: var(--main-color);
+}
+
+.vallet-toggle[aria-checked="true"] .vallet-toggle-thumb {
+  transform: translateX(20px);
+}
+
+/* Input de Moeda */
+.vallet-currency-input {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vallet-currency-input:focus-within {
+  border-color: var(--support-mid);
+  box-shadow: 0 0 0 2px rgba(151, 166, 151, 0.2);
+}
+
+.vallet-currency-prefix {
+  display: grid;
+  width: 40px;
+  height: 100%;
+  flex: 0 0 40px;
+  place-items: center;
+  border-right: 1px solid var(--border-light);
+  color: var(--secondary-color);
+  background: var(--bg-main);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.vallet-currency-input input {
+  flex: 1;
+  height: 38px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none !important;
+}
+
+/* Seção de Vagas */
+.vallet-vacancies-header {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  border-bottom: 1px solid #e8eeec;
+  margin-bottom: 16px;
 }
-.details-title-line {
+
+.vallet-vacancies-title {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.details-title-line h2 {
   margin: 0;
-  font-size: 24px;
-}
-.details-header p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-.status-badge {
-  padding: 5px 10px;
-  border-radius: 999px;
-  color: #057153;
-  background: #e6f7f1;
-  font-size: 12px;
+  font-size: 20px;
   font-weight: 600;
+  color: var(--text-main);
 }
-.details-actions {
+
+.vallet-badge {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--support-light);
+  color: var(--text-main);
+}
+
+.vallet-actions-group {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
-.details-actions .primary-button {
-  width: auto;
-}
-.details-content {
-  padding: 4px 32px 32px;
-}
-.details-section {
-  padding: 24px 0;
-  border-bottom: 1px solid #e8eeec;
-}
-.details-section:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-.details-section h3 {
-  margin: 0 0 16px;
-  color: var(--dark);
-  font-size: 18px;
-}
-.details-grid {
-  display: grid;
-  margin: 0;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px 28px;
-}
-.details-grid--compact {
-  grid-template-columns: repeat(3, minmax(150px, 220px));
-}
-.details-grid div {
-  min-width: 0;
-}
-.details-field--wide {
-  grid-column: span 2;
-}
-.details-grid dt {
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.details-grid dd {
-  margin: 0;
-  font-weight: 700;
-}
-.parking-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-.parking-summary-grid article {
-  display: grid;
-  padding: 20px;
-  border-radius: 12px;
-  background: var(--soft);
-}
-.parking-summary-grid small {
-  color: var(--muted);
-  font-weight: 700;
-}
-.parking-summary-grid strong {
-  margin-top: 6px;
-  color: var(--dark);
-  font-size: 28px;
-}
-.vacancies-panel {
-  margin-top: 28px;
-  overflow: hidden;
-  border: 1px solid #e3e9e7;
-  border-radius: 14px;
-}
-.vacancies-panel-header {
-  display: flex;
-  padding: 22px 24px;
+
+.vallet-btn-secondary {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid #e8eeec;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--main-color);
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-.vacancies-panel-header h4 {
-  margin: 0 0 5px;
-  font-size: 17px;
+
+.vallet-btn-secondary:hover {
+  background: var(--bg-main);
 }
-.vacancies-panel-header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
+
+.vallet-btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
-.vacancies-panel-actions {
-  display: flex;
-  gap: 10px;
-}
-.vacancies-panel-actions .primary-button,
-.vacancies-panel-actions .secondary-action {
-  width: auto;
-  min-height: 42px;
-  font-size: 13px;
-}
-.vacancies-toolbar {
-  display: grid;
-  padding: 18px 24px;
-  grid-template-columns: minmax(220px, 1fr) 180px 190px;
-  gap: 14px;
-  background: #fafbfb;
-}
-.vacancy-search,
-.vacancy-filter {
-  display: grid;
-  gap: 7px;
-}
-.vacancy-search span,
-.vacancy-filter span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-.vacancy-search input,
-.vacancy-filter select {
-  width: 100%;
-  height: 42px;
-  padding: 0 12px;
-  border: 1px solid var(--gray);
-  border-radius: 9px;
-  background: #fff;
-  outline: none;
-}
-.vacancy-search input:focus,
-.vacancy-filter select:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(0, 166, 118, 0.11);
-}
-.vacancies-table-wrapper {
-  overflow-x: auto;
-}
-.vacancies-table {
+
+/* Tabela de Vagas */
+.vallet-table {
   width: 100%;
   border-collapse: collapse;
-  white-space: nowrap;
+  font-size: 15px;
+}
+
+.vallet-table th {
+  padding: 12px;
   text-align: left;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-light);
 }
-.vacancies-table th {
-  padding: 13px 16px;
-  color: var(--muted);
-  background: #f6f8f7;
-  font-size: 11px;
-  letter-spacing: 0.35px;
-  text-transform: uppercase;
+
+.vallet-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-main);
+  font-weight: 400;
 }
-.vacancies-table td {
-  padding: 15px 16px;
-  border-top: 1px solid #edf0ef;
-  font-size: 13px;
+
+.vallet-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.vacancy-number {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border: 1px solid var(--green);
-  border-radius: 50%;
-  color: var(--dark);
-  background: var(--soft);
-}
-.vacancy-status,
-.sensor-status {
+
+.vallet-icon-btn {
   display: inline-flex;
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-}
-.vacancy-status--livre,
-.sensor-status--conectado {
-  color: #057153;
-  background: #e5f7f0;
-}
-.vacancy-status--ocupada {
-  color: #9a4e00;
-  background: #fff1db;
-}
-.vacancy-status--manutenção,
-.sensor-status--desconectado {
-  color: #8b2525;
-  background: #fff0f0;
-}
-.vacancy-actions-cell {
-  text-align: right;
-}
-.vacancy-actions-cell button {
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border: 0;
-  color: var(--dark);
+  border-radius: 6px;
   background: transparent;
+  color: var(--secondary-color);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.vallet-icon-btn:hover {
+  background: var(--bg-main);
+}
+
+.vallet-empty-row {
+  text-align: center;
+  color: var(--secondary-color);
+  padding: 32px !important;
+}
+
+/* Paginação */
+.vallet-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  font-size: 15px;
+  color: var(--secondary-color);
+}
+
+.vallet-pagination-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vallet-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vallet-page-btn[aria-current="page"] {
+  background: var(--main-color);
+  border-color: var(--main-color);
+  color: #fff;
+}
+
+.vallet-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Rodapé do Formulário */
+.vallet-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 24px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+  gap: 12px;
+}
+
+.vallet-cancel-link {
+  margin-right: auto;
+  color: var(--main-color);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.vallet-btn-clear {
+  height: 40px;
+  padding: 0 20px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vallet-btn-primary {
+  height: 40px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--main-color);
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vallet-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Dialog (Modais de Vagas) */
+.vallet-dialog {
+  width: min(500px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  color: var(--text-main);
+}
+.vallet-dialog::backdrop {
+  background: rgba(23, 36, 28, 0.4);
+}
+.vallet-dialog form {
+  padding: 24px;
+}
+.vallet-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.vallet-dialog-header h2 {
+  margin: 0;
+  font-size: 18px;
   font-weight: 600;
 }
-.vacancy-actions-cell button:disabled {
-  opacity: 0.55;
+.vallet-dialog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
-.vacancies-no-results {
-  height: 120px;
-  color: var(--muted);
-  text-align: center;
+.vallet-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
 }
-@media (max-width: 900px) {
-  .login-layout {
-    grid-template-columns: 1fr;
-  }
-  .login-presentation {
-    display: none;
-  }
-  .mobile-logo {
-    display: block;
-  }
-  .dashboard-layout {
-    grid-template-columns: 82px 1fr;
-  }
-  .sidebar span {
-    display: none;
-  }
-  .sidebar {
-    padding-inline: 13px;
-  }
-  .sidebar nav a,
-  .logout-button {
-    justify-content: center;
-  }
-  .welcome-card {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .statistics-grid,
-  .management-grid {
-    grid-template-columns: 1fr;
-  }
-  .form-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .parking-capacity-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .address-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .address-field--cep,
-  .address-field--street,
-  .address-field--complement,
-  .address-field--number,
-  .address-field--district,
-  .address-field--city,
-  .address-field--state {
-    grid-column: auto;
-  }
-  .operation-fields-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .vacancies-toolbar {
+.vallet-dialog-error {
+  color: #8b2525;
+  font-size: 15px;
+  margin: 16px 0 0;
+}
+
+/* Responsividade do Formulário Vallet */
+@media (max-width: 1024px) {
+  .vallet-grid-row-2, .vallet-grid-row-3, .vallet-grid-operation {
     grid-template-columns: 1fr 1fr;
   }
-  .vacancy-search {
-    grid-column: 1 / -1;
-  }
-  .form-field--full {
-    grid-column: 1 / -1;
-  }
 }
-@media (max-width: 640px) {
-  .dashboard-content {
-    padding-inline: 18px;
-  }
-  .form-header,
-  .registration-form {
-    padding-right: 20px;
-    padding-left: 20px;
-  }
-  .form-grid {
+@media (max-width: 768px) {
+  .vallet-grid-row-1, .vallet-grid-row-2, .vallet-grid-row-3, .vallet-grid-operation, .vallet-dialog-grid {
     grid-template-columns: 1fr;
   }
-  .form-field--wide,
-  .form-field--full,
-  .address-field--cep,
-  .address-field--street,
-  .address-field--complement,
-  .address-field--number,
-  .address-field--district,
-  .address-field--city,
-  .address-field--state {
-    grid-column: auto;
-  }
-  .form-actions {
-    align-items: stretch;
+  .vallet-form-footer {
     flex-direction: column-reverse;
-  }
-  .form-actions .primary-button,
-  .secondary-action {
-    width: 100%;
-  }
-  .cancel-link {
-    margin: 4px auto 0;
-  }
-  .list-header {
     align-items: stretch;
-    flex-direction: column;
   }
-  .primary-link {
-    width: 100%;
+  .vallet-cancel-link {
+    margin: 8px auto 0;
   }
-  .operation-fields-grid {
-    grid-template-columns: 1fr;
-  }
-  .details-header,
-  .details-title-line,
-  .details-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  .details-actions .primary-button,
-  .details-actions .secondary-button {
-    width: 100%;
-  }
-  .details-grid,
-  .details-grid--compact,
-  .parking-summary-grid {
-    grid-template-columns: 1fr;
-  }
-  .details-field--wide {
-    grid-column: auto;
-  }
-  .vacancies-panel-header,
-  .vacancies-panel-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  .vacancies-panel-actions .primary-button,
-  .vacancies-panel-actions .secondary-action {
-    width: 100%;
-  }
-  .vacancies-toolbar {
-    grid-template-columns: 1fr;
-  }
-  .vacancy-search {
-    grid-column: auto;
+  .vallet-table-wrapper {
+    overflow-x: auto;
   }
 }
 
-.operation-fields-grid .operating-hours-toggle {
-  min-height: 48px;
-}
-.operating-hours-toggle-track {
-  flex-shrink: 0;
-}
 .table-action-btn {
   display: inline-flex;
   align-items: center;
@@ -1155,397 +1112,16 @@ select {
   gap: 10px;
   min-height: 40px;
   padding: 0 16px;
-  border: 1px solid #00a676;
+  border: 1px solid var(--support-light);
   border-radius: 8px;
-  background: #e8f7f1;
-  color: #046c4e;
-  font-size: 14px;
-  font-weight: 600;
+  background: var(--bg-main);
+  color: var(--main-color);
+  font-size: 15px;
+  font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
 }
 .table-action-btn:hover {
-  background: #046c4e;
+  background: var(--main-color);
   color: #fff;
-}
-.table-action-btn:focus-visible {
-  outline: 3px solid #00a676;
-  outline-offset: 3px;
-}
-
-/* Cadastro compacto, com uma superfície contínua e editor de vagas em diálogo. */
-.parking-registration {
-  border-radius: 12px;
-  box-shadow: none;
-}
-.parking-registration .registration-form {
-  padding: 20px 24px 0;
-}
-.parking-registration .form-section {
-  padding: 0 0 20px;
-  margin: 0 0 20px;
-  min-width: 0;
-}
-.parking-registration .form-section legend {
-  color: #173d34;
-  font-size: 17px;
-  font-weight: 600;
-  padding: 0 0 12px;
-  margin: 0;
-}
-.parking-registration .form-grid {
-  gap: 14px 16px;
-}
-.parking-registration .form-field {
-  gap: 6px;
-  min-width: 0;
-}
-.parking-registration .form-field > span,
-.parking-vacancy-dialog .form-field > span {
-  font-size: 12px;
-  font-weight: 500;
-  color: #374841;
-}
-.parking-registration .form-field input,
-.parking-registration .form-field select,
-.parking-vacancy-dialog .form-field input,
-.parking-vacancy-dialog .form-field select {
-  height: 40px;
-  border-radius: 6px;
-  padding: 0 10px;
-  font-size: 13px;
-}
-.parking-registration .form-subsection {
-  margin: 0;
-}
-.parking-registration .operation-fields-grid {
-  gap: 16px;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(180px, 1fr);
-}
-.parking-registration .operating-hours-toggle {
-  gap: 8px;
-  font-size: 12px;
-  min-height: 40px;
-}
-.parking-registration .currency-input,
-.parking-vacancy-dialog .currency-input {
-  height: 40px;
-  border-radius: 6px;
-}
-.parking-registration .currency-input input,
-.parking-vacancy-dialog .currency-input input {
-  height: 38px;
-  border: 0;
-}
-.parking-registration .currency-prefix,
-.parking-vacancy-dialog .currency-prefix {
-  width: 38px;
-  flex-basis: 38px;
-  font-size: 12px;
-  font-weight: 500;
-}
-.parking-registration .form-actions {
-  margin: 0 -24px;
-  padding: 18px 24px;
-  border-top: 1px solid #e8eeec;
-  gap: 12px;
-}
-.parking-registration .form-actions .primary-button {
-  min-width: 0;
-  width: auto;
-  font-size: 13px;
-  padding: 12px 20px;
-}
-.parking-vacancies {
-  padding-bottom: 20px;
-}
-.parking-vacancies-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-.parking-vacancies-header h2 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-  color: #173d34;
-}
-.parking-count {
-  font-size: 12px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  background: var(--soft);
-  color: var(--dark);
-  font-weight: 500;
-}
-.parking-vacancies-tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.parking-outline-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: 1px solid #8aaba0;
-  border-radius: 6px;
-  background: white;
-  color: #04563f;
-  padding: 9px 13px;
-  min-height: 38px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.parking-outline-button:hover {
-  background: var(--soft);
-}
-.parking-outline-button:disabled,
-.parking-icon-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.parking-vacancies-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: auto;
-  font-size: 13px;
-}
-.parking-vacancies-table th {
-  padding: 10px 12px;
-  text-align: left;
-  background: #f3f6f5;
-  color: #54635d;
-  font-size: 12px;
-  font-weight: 500;
-}
-.parking-vacancies-table td {
-  padding: 7px 12px;
-  border-bottom: 1px solid #e8eeec;
-  overflow-wrap: anywhere;
-}
-.parking-vacancies-table tbody tr:hover {
-  background: #f6fbf8;
-}
-.parking-vacancies-table th:last-child,
-.parking-vacancies-table td:last-child {
-  width: 100px;
-}
-.parking-row-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.parking-icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  color: #37584e;
-  background: transparent;
-  cursor: pointer;
-  font-size: 24px;
-}
-.parking-icon-button:hover {
-  background: #e7f3ed;
-}
-.parking-icon-button--danger {
-  color: #be3242;
-}
-.parking-icon-button--danger:hover {
-  background: #fff0f0;
-}
-.parking-empty {
-  height: 90px;
-  text-align: center;
-  color: var(--muted);
-}
-.parking-pagination-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 12px;
-  color: #65736d;
-  font-size: 12px;
-  flex-wrap: wrap;
-}
-.parking-pagination,
-.parking-pagination > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.parking-pagination button {
-  border: 1px solid #dce5e1;
-  border-radius: 5px;
-  background: white;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 7px;
-  color: #34594b;
-  cursor: pointer;
-  font-size: 12px;
-}
-.parking-pagination button[aria-current="page"] {
-  background: var(--dark);
-  border-color: var(--dark);
-  color: white;
-}
-.parking-pagination button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.parking-page-gap {
-  padding: 0 3px;
-}
-.parking-edit-vacancies-link {
-  padding-bottom: 20px;
-  font-size: 13px;
-}
-.parking-vacancy-dialog {
-  width: min(500px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
-  padding: 0;
-  overflow: auto;
-  border: 1px solid #e3e9e7;
-  border-radius: 12px;
-  box-shadow: 0 20px 70px #142c3433;
-  color: #172d25;
-}
-.parking-vacancy-dialog::backdrop {
-  background: #122d264f;
-}
-.parking-vacancy-dialog form {
-  padding: 24px;
-}
-.parking-dialog-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 16px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #e8eeec;
-}
-.parking-dialog-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-.parking-dialog-fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-.parking-dialog-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  padding-top: 20px;
-  margin-top: 20px;
-  border-top: 1px solid #e8eeec;
-}
-.parking-dialog-actions .primary-button {
-  width: auto;
-  min-width: 0;
-  padding: 10px 16px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 6px;
-}
-.parking-dialog-error {
-  color: #a82535;
-  font-size: 12px;
-  margin: 16px 0 0;
-}
-.parking-outline-button:focus-visible,
-.parking-icon-button:focus-visible,
-.parking-pagination button:focus-visible {
-  outline: 3px solid #00a67688;
-  outline-offset: 2px;
-}
-@media (max-width: 1100px) {
-  .parking-registration .operation-fields-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 700px) {
-  .parking-registration .registration-form {
-    padding: 16px 16px 0;
-  }
-  .parking-registration .form-grid,
-  .parking-registration .operation-fields-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .parking-registration .address-grid > label {
-    grid-column: auto;
-  }
-  .parking-registration .form-actions {
-    margin: 0 -16px;
-    padding: 16px;
-    flex-wrap: wrap;
-  }
-  .parking-registration .form-actions .primary-button {
-    width: 100%;
-  }
-  .parking-vacancies-table {
-    min-width: 540px;
-  }
-  .parking-dialog-fields {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .parking-dialog-actions {
-    flex-wrap: wrap;
-  }
-}
-
-.dashboard-header h1 {
-  font-weight: 600;
-  letter-spacing: -0.4px;
-}
-
-.selectebotao{
-  display: flex;
-  position: relative;
-    border: 1px solid var(--gray);
-
-    border-radius: 6px;
-    padding: 0 10px;
-}
-
-.selectebotao select{
-  border: none;
-}
-
-.selectebotao select:focus{
-  border: none;
-  box-shadow: none
-}
-.parking-outline-button-admin {
-  right: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border-radius: 6px;
-  background: white;
-  color: #04563f;
-  padding: 9px 13px;
-  min-height: 38px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
 }

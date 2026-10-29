@@ -139,6 +139,13 @@ export const apiService = {
     });
   },
 
+  async atualizarGerente(uid, dados) {
+    return this.request(`/usuarios/atualizar_usuario/${encodeURIComponent(uid)}`, {
+      method: "PATCH",
+      body: JSON.stringify(dados),
+    });
+  },
+
   async desativarGerente(uid) {
     return this.request(`/auth/desativar_conta/${uid}`, {
       method: "POST",

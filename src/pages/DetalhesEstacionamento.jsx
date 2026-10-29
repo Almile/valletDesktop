@@ -1,10 +1,41 @@
-import { useMemo, useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { apiService } from "../services/api";
 
+function IconeVaga({ tipo }) {
+  const caminhos = {
+    editar: (
+      <path d="m16 3 5 5M4 16 16 4a2.1 2.1 0 0 1 3 3L7 19l-4 1z" />
+    ),
+    excluir: (
+      <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
+    ),
+    adicionar: <path d="M12 5v14M5 12h14" />,
+    lote: (
+      <path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1" />
+    ),
+  };
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {caminhos[tipo]}
+    </svg>
+  );
+}
+
 export default function DetalhesEstacionamento() {
   const { estacionamentoId } = useParams();
+  const navigate = useNavigate();
   const [estacionamento, setEstacionamento] = useState(null);
   const [vagas, setVagas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +46,9 @@ export default function DetalhesEstacionamento() {
   const [showModalSingle, setShowModalSingle] = useState(false);
   const [showModalLote, setShowModalLote] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const dialogSingleRef = useRef(null);
+  const dialogLoteRef = useRef(null);
 
   const [novaVaga, setNovaVaga] = useState({
     numero: "",
@@ -36,6 +70,24 @@ export default function DetalhesEstacionamento() {
   useEffect(() => {
     carregarDados();
   }, [estacionamentoId]);
+
+  // Controle do Modal Individual
+  useEffect(() => {
+    if (showModalSingle && dialogSingleRef.current && !dialogSingleRef.current.open) {
+      dialogSingleRef.current.showModal();
+    } else if (!showModalSingle && dialogSingleRef.current?.open) {
+      dialogSingleRef.current.close();
+    }
+  }, [showModalSingle]);
+
+  // Controle do Modal em Lote
+  useEffect(() => {
+    if (showModalLote && dialogLoteRef.current && !dialogLoteRef.current.open) {
+      dialogLoteRef.current.showModal();
+    } else if (!showModalLote && dialogLoteRef.current?.open) {
+      dialogLoteRef.current.close();
+    }
+  }, [showModalLote]);
 
   async function carregarDados() {
     try {
@@ -121,12 +173,15 @@ export default function DetalhesEstacionamento() {
   }
 
   async function excluir_estacionamento(estacionamentoId) {
+    if (!window.confirm("Deseja realmente excluir este estacionamento? Esta ação não pode ser desfeita.")) return;
     try {
-        const requisicao = await apiService.excluirEstacionamento(estacionamentoId);
-        alert("Estacionamento excluido com sucesso!")
-      } catch (err) {
-        console.warn(err)
-      } 
+      await apiService.excluirEstacionamento(estacionamentoId);
+      alert("Estacionamento excluído com sucesso!");
+      navigate("/estacionamentos");
+    } catch (err) {
+      console.warn(err);
+      alert("Erro ao excluir estacionamento.");
+    }
   }
 
   async function toggleDisponibilidade(vaga) {
@@ -145,7 +200,9 @@ export default function DetalhesEstacionamento() {
   if (loading) {
     return (
       <Layout title="Dados do estacionamento">
-        <p style={{ padding: "20px" }}>Carregando dados do estacionamento...</p>
+        <div className="vallet-form-container">
+          <p>Carregando dados do estacionamento...</p>
+        </div>
       </Layout>
     );
   }
@@ -155,29 +212,40 @@ export default function DetalhesEstacionamento() {
 
   return (
     <Layout title="Dados do estacionamento">
-      <section className="details-card">
-        <header className="details-header">
+      <div className="vallet-form-container">
+        
+        {/* Cabeçalho de Ações e Título */}
+        <header style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "32px", paddingBottom: "24px", borderBottom: "1px solid var(--border-light)" }}>
           <div>
-            <div className="details-title-line">
-              <h2>{estacionamento?.nome || "Estacionamento"}</h2>
-              <span className="status-badge">Ativo</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px" }}>
+              <h2 style={{ margin: 0, fontSize: "24px", fontWeight: "600", color: "var(--text-main)" }}>
+                {estacionamento?.nome || "Estacionamento"}
+              </h2>
+              <span className="vallet-badge" style={{ color: "#057153", background: "#e6f7f1" }}>Ativo</span>
             </div>
-            <p>Código do sistema: {estacionamentoId}</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "var(--secondary-color)" }}>
+              Código do sistema: {estacionamentoId}
+            </p>
           </div>
 
-          <div className="details-actions">
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <button 
+              className="vallet-btn-clear" 
+              type="button" 
+              onClick={() => excluir_estacionamento(estacionamentoId)}
+            >
+              Excluir estacionamento
+            </button>
             {estacionamento && (
               <Link
-                className="primary-link"
+                className="vallet-btn-secondary"
                 to={`/estacionamentos/${estacionamentoId}/editar`}
+                style={{ textDecoration: "none" }}
               >
-                Editar estacionamento
+                Editar
               </Link>
             )}
-            {/* TO-DO  mudar a aprencia e local do botão de excluir estacionamento*/}
-            <button className="primary-button" type="submit" onClick={()=>{excluir_estacionamento(estacionamentoId)}}>Excluir estacionamento</button>
-
-            <Link className="secondary-button" to="/estacionamentos">
+            <Link className="vallet-cancel-link" to="/estacionamentos" style={{ marginLeft: "12px" }}>
               Voltar
             </Link>
           </div>
@@ -185,317 +253,316 @@ export default function DetalhesEstacionamento() {
 
         {error && (
           <div
+            role="alert"
             style={{
-              color: "red",
-              backgroundColor: "#ffe6e6",
+              color: "#8b2525",
+              backgroundColor: "#fff0f0",
               padding: "12px",
-              margin: "16px 0",
               borderRadius: "6px",
+              marginBottom: "16px",
             }}
           >
             {error}
           </div>
         )}
 
-        <div className="details-content">
-          <section className="details-section">
-            <h3>Informações principais</h3>
-            <dl className="details-grid">
-              <div>
-                <dt>Nome</dt>
-                <dd>{estacionamento?.nome || "-"}</dd>
-              </div>
-              <div>
-                <dt>CNPJ</dt>
-                <dd>{estacionamento?.cnpj || "-"}</dd>
-              </div>
-              <div>
-                <dt>Telefone</dt>
-                <dd>{estacionamento?.telefone || "-"}</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="details-section">
-            <h3>Endereço</h3>
-            <dl className="details-grid">
-              <div className="details-field--wide">
-                <dt>Logradouro</dt>
-                <dd>
-                  {[
-                    enderecoObj.logradouro ||
-                      (typeof estacionamento?.endereco === "string"
-                        ? estacionamento.endereco
-                        : ""),
-                    enderecoObj.numero,
-                  ]
-                    .filter(Boolean)
-                    .join(", ") || "-"}
-                </dd>
-              </div>
-              <div>
-                <dt>Complemento</dt>
-                <dd>{enderecoObj.complemento || "-"}</dd>
-              </div>
-              <div>
-                <dt>Bairro</dt>
-                <dd>{enderecoObj.bairro || "-"}</dd>
-              </div>
-              <div>
-                <dt>Cidade</dt>
-                <dd>
-                  {enderecoObj.cidade ||
-                    enderecoObj.localidade ||
-                    estacionamento?.cidade ||
-                    "-"}
-                </dd>
-              </div>
-              <div>
-                <dt>UF</dt>
-                <dd>{enderecoObj.uf || "-"}</dd>
-              </div>
-              <div>
-                <dt>CEP</dt>
-                <dd>{enderecoObj.cep || "-"}</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="details-section">
-            <h3>Funcionamento e valores</h3>
-            <dl className="details-grid details-grid--compact">
-              {estacionamento?.funciona24h === true ? (
-                <div>
-                  <dt>Funcionamento</dt>
-                  <dd>24 horas</dd>
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <dt>Abertura</dt>
-                    <dd>{estacionamento?.horarioAbertura || "08:00"}</dd>
-                  </div>
-                  <div>
-                    <dt>Fechamento</dt>
-                    <dd>{estacionamento?.horarioFechamento || "18:00"}</dd>
-                  </div>
-                </>
-              )}
-              <div>
-                <dt>Valor base por hora</dt>
-                <dd>
-                  R$ {parseFloat(estacionamento?.valorHora || 0).toFixed(2)}
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="details-section">
-            <h3>Vagas</h3>
-            <div className="parking-summary-grid">
-              <article>
-                <small>Total de vagas</small>
-                <strong>{vagas.length}</strong>
-              </article>
-              <article>
-                <small>Vagas disponíveis</small>
-                <strong>{vagas.filter((v) => v.disponivel).length}</strong>
-              </article>
-              <article>
-                <small>Vagas PCD / Preferenciais</small>
-                <strong>
-                  {
-                    vagas.filter((v) => v.tipo === "IdosoPcd" || v.preferencial)
-                      .length
-                  }
-                </strong>
-              </article>
-              <article>
-                <small>Vagas Ocupadas</small>
-                <strong>{vagas.filter((v) => !v.disponivel).length}</strong>
-              </article>
+        {/* Informações Principais */}
+        <div className="vallet-section">
+          <h3 className="vallet-section-title">Informações principais</h3>
+          <hr className="vallet-divider" />
+          <div className="vallet-grid-row-1">
+            <div className="vallet-field">
+              <span className="vallet-label">Nome</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>{estacionamento?.nome || "-"}</div>
             </div>
-
-            <div className="vacancies-panel">
-              <header className="vacancies-panel-header">
-                <div>
-                  <h4>Gestão de vagas</h4>
-                  <p>
-                    Vagas cadastradas no sistema e disponíveis para reserva.
-                  </p>
-                </div>
-
-                <div className="vacancies-panel-actions">
-                  <button
-                    className="secondary-action"
-                    type="button"
-                    onClick={() => setShowModalLote(true)}
-                  >
-                    Gerar vagas em lote
-                  </button>
-                  <button
-                    className="primary-button"
-                    type="button"
-                    onClick={() => setShowModalSingle(true)}
-                  >
-                    + Nova vaga
-                  </button>
-                </div>
-              </header>
-
-              <div className="vacancies-toolbar">
-                <label className="vacancy-search">
-                  <span>Pesquisar vaga</span>
-                  <input
-                    type="search"
-                    placeholder="Número ou localização"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </label>
-
-                <label className="vacancy-filter">
-                  <span>Categoria</span>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    <option value="todas">Todas</option>
-                    <option value="Comum">Comum</option>
-                    <option value="IdosoPcd">Idoso / PCD</option>
-                    <option value="Moto">Moto</option>
-                  </select>
-                </label>
-
-                <label className="vacancy-filter">
-                  <span>Disponibilidade</span>
-                  <select
-                    value={availability}
-                    onChange={(e) => setAvailability(e.target.value)}
-                  >
-                    <option value="todas">Todas</option>
-                    <option value="Livre">Livre</option>
-                    <option value="Ocupada">Ocupada</option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="vacancies-table-wrapper">
-                <table className="vacancies-table">
-                  <thead>
-                    <tr>
-                      <th>Vaga</th>
-                      <th>Localização</th>
-                      <th>Categoria</th>
-                      <th>Preço/h</th>
-                      <th>Preferencial</th>
-                      <th>Disponibilidade</th>
-                      <th aria-label="Ações" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredVacancies.length ? (
-                      filteredVacancies.map((vacancy) => (
-                        <tr key={vacancy.id}>
-                          <td>
-                            <strong className="vacancy-number">
-                              {vacancy.numero}
-                            </strong>
-                          </td>
-                          <td>{vacancy.localizacao || "Padrão"}</td>
-                          <td>{vacancy.tipo}</td>
-                          <td>
-                            R$ {parseFloat(vacancy.preco || 0).toFixed(2)}
-                          </td>
-                          <td>{vacancy.preferencial ? "Sim" : "Não"}</td>
-                          <td>
-                            <span
-                              className={`vacancy-status vacancy-status--${vacancy.disponivel ? "livre" : "ocupada"}`}
-                              style={{
-                                cursor: "pointer",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                color: "#fff",
-                                backgroundColor: vacancy.disponivel
-                                  ? "#28a745"
-                                  : "#dc3545",
-                              }}
-                              onClick={() => toggleDisponibilidade(vacancy)}
-                              title="Clique para alterar status"
-                            >
-                              {vacancy.disponivel ? "Livre" : "Ocupada"}
-                            </span>
-                          </td>
-                          <td className="vacancy-actions-cell">
-                            <button
-                              type="button"
-                              style={{
-                                color: "red",
-                                border: "none",
-                                background: "none",
-                                cursor: "pointer",
-                              }}
-                              onClick={async () => {
-                                if (
-                                  confirm(
-                                    `Deseja excluir a vaga ${vacancy.numero}?`,
-                                  )
-                                ) {
-                                  await apiService.excluirVaga(vacancy.id);
-                                  carregarDados();
-                                }
-                              }}
-                            >
-                              Excluir
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td className="vacancies-no-results" colSpan="7">
-                          Nenhuma vaga encontrada com esses filtros.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+            <div className="vallet-field">
+              <span className="vallet-label">CNPJ</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>{estacionamento?.cnpj || "-"}</div>
             </div>
-          </section>
+            <div className="vallet-field">
+              <span className="vallet-label">Telefone</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>{estacionamento?.telefone || "-"}</div>
+            </div>
+          </div>
         </div>
-      </section>
 
-      {showModalSingle && (
-        <div style={modalOverlayStyle}>
-          <div style={modalBodyStyle}>
-            <h3>Cadastrar Nova Vaga</h3>
-            <form onSubmit={handleCriarVaga}>
-              <div style={formGroupStyle}>
-                <label>Número/Identificador da Vaga:</label>
+        {/* Endereço */}
+        <div className="vallet-section">
+          <h3 className="vallet-section-title">Endereço</h3>
+          <hr className="vallet-divider" />
+          <div className="vallet-grid-row-3">
+            <div className="vallet-field">
+              <span className="vallet-label">Logradouro</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>
+                {[
+                  enderecoObj.logradouro ||
+                    (typeof estacionamento?.endereco === "string"
+                      ? estacionamento.endereco
+                      : ""),
+                  enderecoObj.numero,
+                ]
+                  .filter(Boolean)
+                  .join(", ") || "-"}
+              </div>
+            </div>
+            <div className="vallet-field">
+              <span className="vallet-label">CEP</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>{enderecoObj.cep || "-"}</div>
+            </div>
+            <div className="vallet-field">
+              <span className="vallet-label">Bairro</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>{enderecoObj.bairro || "-"}</div>
+            </div>
+            <div className="vallet-field">
+              <span className="vallet-label">Cidade / UF</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>
+                {enderecoObj.cidade || enderecoObj.localidade || estacionamento?.cidade || "-"} - {enderecoObj.uf || "-"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Funcionamento e Valores */}
+        <div className="vallet-section">
+          <h3 className="vallet-section-title">Funcionamento e valores</h3>
+          <hr className="vallet-divider" />
+          <div className="vallet-grid-operation" style={{ alignItems: "start" }}>
+            <div className="vallet-field">
+              <span className="vallet-label">Valor base por hora</span>
+              <div style={{ fontSize: "13px", marginTop: "4px" }}>
+                R$ {parseFloat(estacionamento?.valorHora || 0).toFixed(2)}
+              </div>
+            </div>
+            
+            {estacionamento?.funciona24h === true ? (
+              <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+                <span className="vallet-label">Horário</span>
+                <div style={{ fontSize: "13px", marginTop: "4px" }}>Funciona 24 horas</div>
+              </div>
+            ) : (
+              <>
+                <div className="vallet-field">
+                  <span className="vallet-label">Abertura</span>
+                  <div style={{ fontSize: "13px", marginTop: "4px" }}>{estacionamento?.horarioAbertura || "08:00"}</div>
+                </div>
+                <div className="vallet-field">
+                  <span className="vallet-label">Fechamento</span>
+                  <div style={{ fontSize: "13px", marginTop: "4px" }}>{estacionamento?.horarioFechamento || "18:00"}</div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Vagas (Gestão e Listagem) */}
+        <div className="vallet-section">
+          <h3 className="vallet-section-title">Gestão de vagas</h3>
+          <hr className="vallet-divider" />
+
+          {/* Cards de Resumo */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "32px" }}>
+            <div style={{ padding: "16px", background: "var(--support-light)", borderRadius: "8px" }}>
+              <div className="vallet-label" style={{ color: "var(--secondary-color)" }}>Total de vagas</div>
+              <div style={{ fontSize: "28px", fontWeight: "600", color: "var(--main-color)", marginTop: "4px" }}>{vagas.length}</div>
+            </div>
+            <div style={{ padding: "16px", background: "var(--support-light)", borderRadius: "8px" }}>
+              <div className="vallet-label" style={{ color: "var(--secondary-color)" }}>Disponíveis</div>
+              <div style={{ fontSize: "28px", fontWeight: "600", color: "var(--main-color)", marginTop: "4px" }}>{vagas.filter((v) => v.disponivel).length}</div>
+            </div>
+            <div style={{ padding: "16px", background: "var(--support-light)", borderRadius: "8px" }}>
+              <div className="vallet-label" style={{ color: "var(--secondary-color)" }}>PCD / Preferenciais</div>
+              <div style={{ fontSize: "28px", fontWeight: "600", color: "var(--main-color)", marginTop: "4px" }}>{vagas.filter((v) => v.tipo === "IdosoPcd" || v.preferencial).length}</div>
+            </div>
+            <div style={{ padding: "16px", background: "var(--support-light)", borderRadius: "8px" }}>
+              <div className="vallet-label" style={{ color: "var(--secondary-color)" }}>Ocupadas</div>
+              <div style={{ fontSize: "28px", fontWeight: "600", color: "var(--main-color)", marginTop: "4px" }}>{vagas.filter((v) => !v.disponivel).length}</div>
+            </div>
+          </div>
+
+          <div className="vallet-vacancies-header">
+            <h4 className="vallet-vacancies-title">Lista de vagas</h4>
+            <div className="vallet-actions-group">
+              <button
+                className="vallet-btn-secondary"
+                type="button"
+                onClick={() => setShowModalLote(true)}
+              >
+                <IconeVaga tipo="lote" />
+                Gerar em lote
+              </button>
+              <button
+                className="vallet-btn-secondary"
+                type="button"
+                onClick={() => setShowModalSingle(true)}
+              >
+                <IconeVaga tipo="adicionar" />
+                Nova vaga
+              </button>
+            </div>
+          </div>
+
+          {/* Barra de Filtros */}
+          <div className="vallet-grid-row-3" style={{ marginBottom: "16px", background: "var(--bg-main)", padding: "16px", borderRadius: "8px" }}>
+            <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+              <span className="vallet-label">Pesquisar vaga</span>
+              <input
+                type="search"
+                placeholder="Número ou localização"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </label>
+
+            <label className="vallet-field">
+              <span className="vallet-label">Categoria</span>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="todas">Todas</option>
+                <option value="Comum">Comum</option>
+                <option value="IdosoPcd">Idoso / PCD</option>
+                <option value="Moto">Moto</option>
+              </select>
+            </label>
+
+            <label className="vallet-field">
+              <span className="vallet-label">Disponibilidade</span>
+              <select
+                value={availability}
+                onChange={(e) => setAvailability(e.target.value)}
+              >
+                <option value="todas">Todas</option>
+                <option value="Livre">Livre</option>
+                <option value="Ocupada">Ocupada</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="vallet-table-wrapper">
+            <table className="vallet-table">
+              <thead>
+                <tr>
+                  <th>Vaga</th>
+                  <th>Localização</th>
+                  <th>Categoria</th>
+                  <th>Preço/h</th>
+                  <th>Preferencial</th>
+                  <th>Disponibilidade</th>
+                  <th aria-label="Ações" />
+                </tr>
+              </thead>
+              <tbody>
+                {filteredVacancies.length ? (
+                  filteredVacancies.map((vacancy) => (
+                    <tr key={vacancy.id}>
+                      <td>
+                        <strong>{vacancy.numero}</strong>
+                      </td>
+                      <td>{vacancy.localizacao || "Padrão"}</td>
+                      <td>{vacancy.tipo === "IdosoPcd" ? "Idoso / PCD" : vacancy.tipo}</td>
+                      <td>
+                        R$ {parseFloat(vacancy.preco || 0).toFixed(2)}
+                      </td>
+                      <td>{vacancy.preferencial ? "Sim" : "Não"}</td>
+                      <td>
+                        <button
+                          type="button"
+                          style={{ border: "none", background: "none", padding: 0, cursor: "pointer" }}
+                          onClick={() => toggleDisponibilidade(vacancy)}
+                          title="Clique para alterar status"
+                        >
+                          <span
+                            className="vallet-badge"
+                            style={{
+                              color: vacancy.disponivel ? "#057153" : "var(--text-main)",
+                              backgroundColor: vacancy.disponivel ? "#e6f7f1" : "var(--border-light)",
+                            }}
+                          >
+                            {vacancy.disponivel ? "Livre" : "Ocupada"}
+                          </span>
+                        </button>
+                      </td>
+                      <td>
+                        <div className="vallet-row-actions">
+                          <button
+                            type="button"
+                            className="vallet-icon-btn"
+                            title="Excluir vaga"
+                            onClick={async () => {
+                              if (window.confirm(`Deseja excluir a vaga ${vacancy.numero}?`)) {
+                                await apiService.excluirVaga(vacancy.id);
+                                carregarDados();
+                              }
+                            }}
+                          >
+                            <IconeVaga tipo="excluir" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="vallet-empty-row" colSpan="7">
+                      Nenhuma vaga encontrada com esses filtros.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Modal: Vaga Individual */}
+        <dialog
+          ref={dialogSingleRef}
+          className="vallet-dialog"
+          onCancel={(e) => {
+            e.preventDefault();
+            setShowModalSingle(false);
+          }}
+        >
+          <form onSubmit={handleCriarVaga}>
+            <header className="vallet-dialog-header">
+              <h2>Cadastrar Nova Vaga</h2>
+              <button
+                type="button"
+                className="vallet-icon-btn"
+                onClick={() => setShowModalSingle(false)}
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </header>
+
+            <div className="vallet-dialog-grid">
+              <label className="vallet-field">
+                <span className="vallet-label">Identificador da Vaga</span>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: A-01, Vaga 12"
+                  placeholder="Ex: A-01"
                   value={novaVaga.numero}
                   onChange={(e) =>
                     setNovaVaga({ ...novaVaga, numero: e.target.value })
                   }
                 />
-              </div>
-              <div style={formGroupStyle}>
-                <label>Localização / Setor:</label>
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Localização / Setor</span>
                 <input
                   type="text"
-                  placeholder="Ex: Piso 1, Setor Norte"
+                  placeholder="Ex: Piso 1"
                   value={novaVaga.localizacao}
                   onChange={(e) =>
                     setNovaVaga({ ...novaVaga, localizacao: e.target.value })
                   }
                 />
-              </div>
-              <div style={formGroupStyle}>
-                <label>Tipo da Vaga:</label>
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Tipo da Vaga</span>
                 <select
                   value={novaVaga.tipo}
                   onChange={(e) =>
@@ -506,49 +573,68 @@ export default function DetalhesEstacionamento() {
                   <option value="IdosoPcd">Idoso / PCD</option>
                   <option value="Moto">Moto</option>
                 </select>
-              </div>
-              <div style={formGroupStyle}>
-                <label>Preço Adicional/Diferenciado (R$):</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={novaVaga.preco}
-                  onChange={(e) =>
-                    setNovaVaga({ ...novaVaga, preco: e.target.value })
-                  }
-                />
-              </div>
-              <div
-                style={{
-                  marginTop: "15px",
-                  display: "flex",
-                  gap: "10px",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <button type="button" onClick={() => setShowModalSingle(false)}>
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="primary-button"
-                >
-                  {submitting ? "Salvando..." : "Salvar Vaga"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              </label>
 
-      {showModalLote && (
-        <div style={modalOverlayStyle}>
-          <div style={modalBodyStyle}>
-            <h3>Gerar Múltiplas Vagas em Lote</h3>
-            <form onSubmit={handleCriarLote}>
-              <div style={formGroupStyle}>
-                <label>Quantidade de vagas:</label>
+              <label className="vallet-field">
+                <span className="vallet-label">Preço Adicional/Diferenciado (R$)</span>
+                <div className="vallet-currency-input">
+                  <span className="vallet-currency-prefix">R$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={novaVaga.preco}
+                    onChange={(e) =>
+                      setNovaVaga({ ...novaVaga, preco: e.target.value })
+                    }
+                  />
+                </div>
+              </label>
+            </div>
+
+            <footer className="vallet-dialog-footer">
+              <button
+                type="button"
+                className="vallet-btn-clear"
+                onClick={() => setShowModalSingle(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="vallet-btn-primary"
+              >
+                {submitting ? "Salvando..." : "Salvar Vaga"}
+              </button>
+            </footer>
+          </form>
+        </dialog>
+
+        {/* Modal: Lote de Vagas */}
+        <dialog
+          ref={dialogLoteRef}
+          className="vallet-dialog"
+          onCancel={(e) => {
+            e.preventDefault();
+            setShowModalLote(false);
+          }}
+        >
+          <form onSubmit={handleCriarLote}>
+            <header className="vallet-dialog-header">
+              <h2>Gerar Vagas em Lote</h2>
+              <button
+                type="button"
+                className="vallet-icon-btn"
+                onClick={() => setShowModalLote(false)}
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </header>
+
+            <div className="vallet-dialog-grid">
+              <label className="vallet-field">
+                <span className="vallet-label">Quantidade de vagas</span>
                 <input
                   type="number"
                   min="1"
@@ -559,19 +645,22 @@ export default function DetalhesEstacionamento() {
                     setLoteVagas({ ...loteVagas, quantidade: e.target.value })
                   }
                 />
-              </div>
-              <div style={formGroupStyle}>
-                <label>Prefixo (Ex: "A-" gera A-1, A-2...):</label>
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Prefixo</span>
                 <input
                   type="text"
+                  placeholder="Ex: A-"
                   value={loteVagas.prefixo}
                   onChange={(e) =>
                     setLoteVagas({ ...loteVagas, prefixo: e.target.value })
                   }
                 />
-              </div>
-              <div style={formGroupStyle}>
-                <label>Tipo de Vaga:</label>
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Tipo de Vaga</span>
                 <select
                   value={loteVagas.tipo}
                   onChange={(e) =>
@@ -580,23 +669,12 @@ export default function DetalhesEstacionamento() {
                 >
                   <option value="Comum">Comum</option>
                   <option value="IdosoPcd">Idoso / PCD</option>
-                  <option value="moto">Moto</option>
-                  <option value="carro">Carro</option>
+                  <option value="Moto">Moto</option>
                 </select>
-              </div>
-              <div style={formGroupStyle}>
-                <label>Preço:</label>
-                <input
-                  type="number"
-                  required
-                  value={loteVagas.preco}
-                  onChange={(e) =>
-                    setLoteVagas({ ...loteVagas, preco: e.target.value })
-                  }
-                />
-              </div>
-              <div style={formGroupStyle}>
-                <label>Localização / Setor Padrão:</label>
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Localização / Setor Padrão</span>
                 <input
                   type="text"
                   placeholder="Ex: Terreno Principal"
@@ -605,58 +683,46 @@ export default function DetalhesEstacionamento() {
                     setLoteVagas({ ...loteVagas, localizacao: e.target.value })
                   }
                 />
-              </div>
-              <div
-                style={{
-                  marginTop: "15px",
-                  display: "flex",
-                  gap: "10px",
-                  justifyContent: "flex-end",
-                }}
+              </label>
+              
+              <label className="vallet-field">
+                <span className="vallet-label">Preço por hora (R$)</span>
+                <div className="vallet-currency-input">
+                  <span className="vallet-currency-prefix">R$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={loteVagas.preco}
+                    onChange={(e) =>
+                      setLoteVagas({ ...loteVagas, preco: e.target.value })
+                    }
+                  />
+                </div>
+              </label>
+            </div>
+
+            <footer className="vallet-dialog-footer">
+              <button
+                type="button"
+                className="vallet-btn-clear"
+                onClick={() => setShowModalLote(false)}
               >
-                <button type="button" onClick={() => setShowModalLote(false)}>
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="primary-button"
-                >
-                  {submitting ? "Gerando..." : "Gerar Vagas"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="vallet-btn-primary"
+              >
+                {submitting ? "Gerando..." : "Gerar Vagas"}
+              </button>
+            </footer>
+          </form>
+        </dialog>
+
+      </div>
     </Layout>
   );
 }
-
-const modalOverlayStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.5)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 1000,
-};
-
-const modalBodyStyle = {
-  background: "#fff",
-  padding: "24px",
-  borderRadius: "8px",
-  maxWidth: "450px",
-  width: "100%",
-};
-
-const formGroupStyle = {
-  display: "flex",
-  flexDirection: "column",
-  marginBottom: "12px",
-  gap: "4px",
-};

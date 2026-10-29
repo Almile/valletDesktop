@@ -49,6 +49,7 @@ export default function Estacionamentos() {
   const [estacionamentos, setEstacionamentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [termoBusca, setTermoBusca] = useState("");
 
   useEffect(() => {
     carregarEstacionamentos();
@@ -66,17 +67,102 @@ export default function Estacionamentos() {
     }
   }
 
+  const estacionamentosFiltrados = estacionamentos.filter((est) =>
+    est.nome?.toLowerCase().includes(termoBusca.toLowerCase())
+  );
+
   return (
     <Layout title="Estacionamentos">
       <section className="list-card">
-        <header className="list-header">
+        
+        <header className="list-header" style={{ flexWrap: "wrap", gap: "16px" }}>
           <div>
             <h2>Estacionamentos cadastrados</h2>
             <p>Visualize e gerencie todas as unidades do sistema.</p>
           </div>
-          <Link className="primary-link" to="/estacionamentos/novo">
-            + Novo estacionamento
-          </Link>
+          
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+            
+            {!loading && (estacionamentos.length > 0 || termoBusca) && (
+              <div style={{ position: "relative", width: "260px" }}>
+                <input
+                  type="text"
+                  placeholder="Pesquisar por nome..."
+                  value={termoBusca}
+                  onChange={(e) => setTermoBusca(e.target.value)}
+                  style={{
+                    width: "100%",
+                    height: "44px",
+                    padding: "0 36px 0 16px",
+                    border: "1px solid var(--border-light)",
+                    borderRadius: "10px",
+                    fontSize: "14px",
+                    fontFamily: "Poppins, sans-serif",
+                    color: "var(--text-main)",
+                    outline: "none",
+                    background: "var(--surface)",
+                    transition: "all 0.2s"
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "var(--support-mid)";
+                    e.target.style.boxShadow = "0 0 0 2px rgba(151, 166, 151, 0.2)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "var(--border-light)";
+                    e.target.style.boxShadow = "none";
+                  }}
+                />
+                {termoBusca ? (
+                  <button
+                    type="button"
+                    onClick={() => setTermoBusca("")}
+                    style={{
+                      position: "absolute",
+                      right: "6px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "var(--secondary-color)",
+                      padding: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "50%",
+                      transition: "background 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-main)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    title="Limpar pesquisa"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                  </button>
+                ) : (
+                  <div style={{
+                      position: "absolute",
+                      right: "12px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--support-mid)",
+                      pointerEvents: "none",
+                      display: "flex"
+                  }}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Link className="primary-link" to="/estacionamentos/novo">
+              + Novo estacionamento
+            </Link>
+          </div>
         </header>
 
         {error && (
@@ -126,8 +212,21 @@ export default function Estacionamentos() {
                     </div>
                   </td>
                 </tr>
+              ) : estacionamentosFiltrados.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px 20px",
+                      color: "var(--secondary-color)",
+                    }}
+                  >
+                    Nenhum estacionamento encontrado com "{termoBusca}".
+                  </td>
+                </tr>
               ) : (
-                estacionamentos.map((est) => (
+                estacionamentosFiltrados.map((est) => (
                   <tr key={est.id || est.cnpj}>
                     <td>
                       <strong>{est.nome}</strong>
@@ -156,7 +255,7 @@ export default function Estacionamentos() {
                         : `${est.horarioAbertura}h às ${est.horarioFechamento}h`}
                     </td>
                     <td>
-                      <span className="badge badge-success">Ativo</span>
+                      <span className="vallet-badge" style={{color: '#057153', background: '#e6f7f1'}}>Ativo</span>
                     </td>
                     <td>
                       <Link
@@ -164,7 +263,6 @@ export default function Estacionamentos() {
                         className="table-action-btn"
                       >
                         <span>Ver detalhes</span>
-                        <span aria-hidden="true">→</span>
                       </Link>
                     </td>
                   </tr>
@@ -195,8 +293,8 @@ export function CadastroEstacionamento() {
   const [cep, setCep] = useState("");
   const [bairro, setBairro] = useState("");
   const [uf, setUf] = useState("");
-  const [logradouro, setLogradouro] = useState("")
-  const [cidade, setCidade] = useState("")
+  const [logradouro, setLogradouro] = useState("");
+  const [cidade, setCidade] = useState("");
   const formularioRef = useRef(null);
   const vagasPorPagina = 5;
   const totalPaginas = Math.max(
@@ -503,7 +601,7 @@ export function CadastroEstacionamento() {
       } else {
         await apiService.criarEstacionamento(payload);
       }
-        sessionStorage.removeItem("rascunhoEstacionamento");
+      sessionStorage.removeItem("rascunhoEstacionamento");
 
       alert(
         editando
@@ -531,16 +629,16 @@ export function CadastroEstacionamento() {
     );
   }
 
-  async function findCEP(cep) {
+  async function findCEP(cepBusca) {
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${cep}/json`);
+      const res = await fetch(`https://viacep.com.br/ws/${cepBusca}/json`);
       const data = await res.json();
-      console.log(data);
-      setCidade(data.localidade)
-      setBairro(data.bairro)
-      setLogradouro(data.logradouro)
-      setUf(data.uf)
-      return
+      if (!data.erro) {
+        setCidade(data.localidade || "");
+        setBairro(data.bairro || "");
+        setLogradouro(data.logradouro || "");
+        setUf(data.uf || "");
+      }
     } catch (err) {
       console.warn("Cep não encontrado", err);
     }
@@ -550,16 +648,16 @@ export function CadastroEstacionamento() {
     <Layout
       title={editando ? "Editar estacionamento" : "Cadastrar estacionamento"}
     >
-      <section className="form-card parking-registration">
+      <div className="vallet-form-container">
         {errorMessage && (
           <div
             role="alert"
             style={{
-              color: "red",
-              backgroundColor: "#ffe6e6",
+              color: "#8b2525",
+              backgroundColor: "#fff0f0",
               padding: "12px",
               borderRadius: "6px",
-              margin: "16px 24px",
+              marginBottom: "16px",
             }}
           >
             {errorMessage}
@@ -567,7 +665,7 @@ export function CadastroEstacionamento() {
         )}
 
         <form
-          className="registration-form"
+          ref={formularioRef}
           onSubmit={handleSubmit}
           key={estacionamentoId || "novo"}
           onReset={() => {
@@ -580,104 +678,107 @@ export function CadastroEstacionamento() {
             sessionStorage.setItem("rascunhoEstacionamento", JSON.stringify(data));
           }}
         >
-          <fieldset className="form-section">
-            <legend>Dados do estacionamento</legend>
-            <div className="form-grid">
-              <label className="form-field">
-                <span>Nome do estacionamento</span>
+          {/* SEÇÃO: Dados do estacionamento */}
+          <div className="vallet-section">
+            <h2 className="vallet-section-title">Dados do estacionamento</h2>
+            <hr className="vallet-divider" />
+            
+            {/* Primeira linha */}
+            <div className="vallet-grid-row-1">
+              <label className="vallet-field">
+                <span className="vallet-label">Nome</span>
                 <input
                   name="nome"
                   type="text"
-                  placeholder="Ex.: Estacionamento Central"
+                  placeholder="Vallet Centro"
                   required
                   defaultValue={valorInicial("nome")}
                 />
               </label>
 
-              <label className="form-field">
-                <span>Administrador responsável</span>
-                {admins.length > 0 ? (
-                    <div className="selectebotao">
-                       {/* TO-DO -  Alinhar o botão ou fazer o que voce quiser */}
-                      <div className="field-action-link">
-                        <Link class="parking-outline-button-admin" to="/estacionamentos/novo/gerente">
-                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
-                        </Link>
-                      </div>
-                      <select
-                        name="adminUid"
-                        required
-                        defaultValue={dadosIniciais?.adminUid || ""}
-                      >
-                        <option value="" disabled>
-                          Administradores Disponíveis
-                        </option>
-
-                        {dadosIniciais?.adminUid &&
-                          !admins.some(
-                            (adm) => (adm.uid || adm.id) === dadosIniciais.adminUid
-                          ) && (
-                            <option value={dadosIniciais.adminUid}>
-                              {dadosIniciais.adminEmail || dadosIniciais.adminUid}
-                            </option>
-                          )}
-                        {admins.map((adm) => (
-                          <option key={adm.uid || adm.id} value={adm.uid || adm.id}>
-                            {adm.nome || adm.email} ({adm.email})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ) : (
-                  <input
-                    name="adminUid"
-                    type="text"
-                    placeholder="Informe o UID do administrador do Firestore"
-                    required
-                    defaultValue={valorInicial("adminUid")}
-                  />
-                )}
-              </label>
-
-              <label className="form-field">
-                <span>CNPJ</span>
+              <label className="vallet-field">
+                <span className="vallet-label">CNPJ</span>
                 <input
                   name="cnpj"
                   type="text"
                   inputMode="numeric"
-                  placeholder="00.000.000/0000-00"
+                  placeholder="12.345.678/0001-90"
                   maxLength="18"
                   onChange={applyMask(formatCnpj)}
                   required
                   defaultValue={valorInicial("cnpj")}
                 />
               </label>
-              <label className="form-field">
-                <span>Telefone</span>
+
+              <div className="vallet-field">
+                <span className="vallet-label">Administrador responsável</span>
+                <div className="vallet-admin-wrapper">
+                  <Link
+                    className="vallet-add-admin-btn"
+                    to="/estacionamentos/novo/gerente"
+                    title="Adicionar administrador"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+                  </Link>
+                  {admins.length > 0 ? (
+                    <select
+                      name="adminUid"
+                      required
+                      defaultValue={dadosIniciais?.adminUid || ""}
+                    >
+                      <option value="" disabled>
+                        Selecione...
+                      </option>
+                      {dadosIniciais?.adminUid &&
+                        !admins.some(
+                          (adm) => (adm.uid || adm.id) === dadosIniciais.adminUid
+                        ) && (
+                          <option value={dadosIniciais.adminUid}>
+                            {dadosIniciais.adminEmail || dadosIniciais.adminUid}
+                          </option>
+                        )}
+                      {admins.map((adm) => (
+                        <option key={adm.uid || adm.id} value={adm.uid || adm.id}>
+                          {adm.nome || adm.email} ({adm.email})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      name="adminUid"
+                      type="text"
+                      placeholder="UID do administrador"
+                      required
+                      defaultValue={valorInicial("adminUid")}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Segunda linha */}
+            <div className="vallet-grid-row-2">
+              <label className="vallet-field">
+                <span className="vallet-label">Telefone</span>
                 <input
                   name="telefone"
                   type="tel"
-                  placeholder="(00) 00000-0000"
+                  placeholder="(13) 99999-1234"
                   maxLength="15"
                   onChange={applyMask(formatPhone)}
                   required
                   defaultValue={valorInicial("telefone")}
                 />
               </label>
-            </div>
-          </fieldset>
 
-          <fieldset className="form-section">
-            <legend>Endereço</legend>
-            <div className="form-grid address-grid">
-              <label className="form-field address-field--cep">
-                <span>CEP</span>
+              <label className="vallet-field">
+                <span className="vallet-label">CEP</span>
                 <input
                   name="cep"
                   type="text"
                   value={cep}
                   inputMode="numeric"
-                  placeholder="00000-000"
+                  placeholder="11010-000"
                   maxLength="9"
                   onChange={(e) => { applyMask(formatCep)(e); setCep(e.target.value);}}
                   onBlur={()=>{findCEP(cep)}}
@@ -685,155 +786,165 @@ export function CadastroEstacionamento() {
                   defaultValue={valorInicial("cep")}
                 />
               </label>
-              <label className="form-field address-field--street">
-                <span>Logradouro</span>
-                <input
-                  name="logradouro"
-                  type="text"
-                  placeholder="Rua, avenida ou travessa"
-                  value={logradouro}
-                  onChange={setLogradouro}
-                  required
-                  defaultValue={valorInicial("logradouro")}
-                />
-              </label>
-              <label className="form-field address-field--complement">
-                <span>Complemento</span>
-                <input
-                  name="complemento"
-                  type="text"
-                  placeholder="Bloco, sala ou referência"
-                  defaultValue={valorInicial("complemento")}
-                />
-              </label>
-              <label className="form-field address-field--number">
-                <span>Número</span>
-                <input
-                  name="numero"
-                  type="text"
-                  placeholder="123"
-                  required
-                  defaultValue={valorInicial("numero")}
-                />
-              </label>
-              <label className="form-field address-field--district">
-                <span>Bairro</span>
-                <input
-                  name="bairro"
-                  type="text"
-                  placeholder="Bairro"
-                  value={bairro}
-                  onChange={setBairro}
-                  required
-                  defaultValue={valorInicial("bairro")}
-                />
-              </label>
-              <label className="form-field address-field--city">
-                <span>Cidade</span>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Cidade</span>
                 <input
                   name="cidade"
                   type="text"
-                  placeholder="Cidade"
+                  placeholder="Santos"
                   value={cidade}
-                  onChange={setCidade}
+                  onChange={(e) => setCidade(e.target.value)}
                   required
                   defaultValue={valorInicial("cidade")}
                 />
               </label>
-              <label className="form-field address-field--state">
-                <span>UF</span>
+
+              <label className="vallet-field">
+                <span className="vallet-label">UF</span>
                 <input
                   name="uf"
                   type="text"
                   maxLength="2"
                   placeholder="SP"
                   value={uf}
-                  onChange={setUf}
+                  onChange={(e) => setUf(e.target.value)}
                   required
                   defaultValue={valorInicial("uf")}
                 />
               </label>
             </div>
-          </fieldset>
 
-          <fieldset className="form-section">
-            <legend>Funcionamento e valores</legend>
-            <div className="form-subsection">
-              <div className="operation-fields-grid">
-                <label className="form-field">
-                  <span>Valor base por hora</span>
-                  <div className="currency-input">
-                    <span className="currency-prefix">R$</span>
-                    <input
-                      name="valorHora"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="10.00"
-                      required
-                      defaultValue={valorInicial("valorHora")}
-                    />
-                  </div>
-                </label>
-                <label className="form-field">
-                  <span>Horário de abertura</span>
+            {/* Terceira linha */}
+            <div className="vallet-grid-row-3">
+              <label className="vallet-field">
+                <span className="vallet-label">Logradouro</span>
+                <input
+                  name="logradouro"
+                  type="text"
+                  placeholder="Rua João Pessoa"
+                  value={logradouro}
+                  onChange={(e) => setLogradouro(e.target.value)}
+                  required
+                  defaultValue={valorInicial("logradouro")}
+                />
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Número</span>
+                <input
+                  name="numero"
+                  type="text"
+                  placeholder="120"
+                  required
+                  defaultValue={valorInicial("numero")}
+                />
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Bairro</span>
+                <input
+                  name="bairro"
+                  type="text"
+                  placeholder="Centro"
+                  value={bairro}
+                  onChange={(e) => setBairro(e.target.value)}
+                  required
+                  defaultValue={valorInicial("bairro")}
+                />
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Complemento</span>
+                <input
+                  name="complemento"
+                  type="text"
+                  placeholder="Opcional"
+                  defaultValue={valorInicial("complemento")}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* SEÇÃO: Funcionamento e valores */}
+          <div className="vallet-section">
+            <h2 className="vallet-section-title">Funcionamento e valores</h2>
+            <hr className="vallet-divider" />
+            
+            <div className="vallet-grid-operation">
+              <label className="vallet-field">
+                <span className="vallet-label">Valor por hora</span>
+                <div className="vallet-currency-input">
+                  <span className="vallet-currency-prefix">R$</span>
                   <input
-                    name="horarioAbertura"
-                    type="time"
-                    disabled={funciona24h}
-                    required={!funciona24h}
-                    defaultValue={valorInicial("horarioAbertura")}
+                    name="valorHora"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="15.00"
+                    required
+                    defaultValue={valorInicial("valorHora")}
                   />
-                </label>
-                <label className="form-field">
-                  <span>Horário de fechamento</span>
-                  <input
-                    name="horarioFechamento"
-                    type="time"
-                    disabled={funciona24h}
-                    required={!funciona24h}
-                    defaultValue={valorInicial("horarioFechamento")}
-                  />
-                </label>
-                <div className="form-field">
-                  <span>Funcionamento 24h</span>
-                  <button
-                    className="operating-hours-toggle"
-                    type="button"
-                    role="switch"
-                    aria-checked={funciona24h}
-                    onClick={() => setFunciona24h((ativo) => !ativo)}
-                  >
-                    <span
-                      className="operating-hours-toggle-track"
-                      aria-hidden="true"
-                    >
-                      <span className="operating-hours-toggle-thumb" />
-                    </span>
-                    <span>Funciona 24 horas</span>
-                  </button>
                 </div>
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Abertura</span>
+                <input
+                  name="horarioAbertura"
+                  type="time"
+                  disabled={funciona24h}
+                  required={!funciona24h}
+                  defaultValue={valorInicial("horarioAbertura")}
+                />
+              </label>
+
+              <label className="vallet-field">
+                <span className="vallet-label">Fechamento</span>
+                <input
+                  name="horarioFechamento"
+                  type="time"
+                  disabled={funciona24h}
+                  required={!funciona24h}
+                  defaultValue={valorInicial("horarioFechamento")}
+                />
+              </label>
+
+              <div className="vallet-field-switch">
+                <button
+                  className="vallet-toggle"
+                  type="button"
+                  role="switch"
+                  aria-checked={funciona24h}
+                  onClick={() => setFunciona24h((ativo) => !ativo)}
+                >
+                  <span
+                    className="vallet-toggle-track"
+                    aria-hidden="true"
+                  >
+                    <span className="vallet-toggle-thumb" />
+                  </span>
+                  <span>Funciona 24 horas</span>
+                </button>
               </div>
             </div>
-          </fieldset>
+          </div>
 
+          {/* SEÇÃO: Vagas do estacionamento */}
           {!editando ? (
-            <section
-              className="parking-vacancies"
-              aria-labelledby="titulo-vagas"
-            >
-              <div className="parking-vacancies-header">
-                <h2 id="titulo-vagas">
-                  Vagas do estacionamento{" "}
-                  <span className="parking-count" aria-live="polite">
+            <div className="vallet-section" aria-labelledby="titulo-vagas">
+              <div className="vallet-vacancies-header">
+                <h2 id="titulo-vagas" className="vallet-vacancies-title">
+                  Vagas do estacionamento
+                  <span className="vallet-badge" aria-live="polite">
                     {vagasIniciais.length}
                   </span>
                 </h2>
-                <div className="parking-vacancies-tools">
+                <div className="vallet-actions-group">
                   <button
                     type="button"
                     data-adicionar-vaga
-                    className="parking-outline-button"
+                    className="vallet-btn-secondary"
                     disabled={submitting}
                     onClick={() => abrirModal("individual")}
                   >
@@ -842,7 +953,7 @@ export function CadastroEstacionamento() {
                   </button>
                   <button
                     type="button"
-                    className="parking-outline-button"
+                    className="vallet-btn-secondary"
                     disabled={submitting}
                     onClick={() => abrirModal("lote")}
                   >
@@ -851,27 +962,25 @@ export function CadastroEstacionamento() {
                   </button>
                 </div>
               </div>
-              <div className="table-wrapper">
-                <table className="parking-vacancies-table">
+
+              <div className="vallet-table-wrapper">
+                <table className="vallet-table">
                   <thead>
                     <tr>
                       <th>Identificador</th>
                       <th>Tipo</th>
                       <th>Setor</th>
-                      <th>Valor / hora</th>
+                      <th>Valor por hora</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {/* TO-DO atualmente ordenando por ultimo adicionado, ordenar por ordem alfabética */}
                     {vagasVisiveis.length ? (
                       vagasVisiveis.map((vaga, indice) => (
                         <tr key={vaga.numero}>
                           <td>{vaga.numero}</td>
                           <td>
-                            {vaga.tipo === "IdosoPcd"
-                              ? "Idoso / PCD"
-                              : vaga.tipo}
+                            {vaga.tipo === "IdosoPcd" ? "Idoso / PCD" : vaga.tipo}
                           </td>
                           <td>{vaga.localizacao || "—"}</td>
                           <td>
@@ -881,28 +990,24 @@ export function CadastroEstacionamento() {
                             })}
                           </td>
                           <td>
-                            <div className="parking-row-actions">
+                            <div className="vallet-row-actions">
                               <button
                                 type="button"
-                                className="parking-icon-button"
+                                className="vallet-icon-btn"
                                 disabled={submitting}
                                 aria-label={`Editar vaga ${vaga.numero}`}
                                 title="Editar vaga"
-                                onClick={() =>
-                                  abrirModal("editar", inicioPagina + indice)
-                                }
+                                onClick={() => abrirModal("editar", inicioPagina + indice)}
                               >
                                 <IconeVaga tipo="editar" />
                               </button>
                               <button
                                 type="button"
-                                className="parking-icon-button parking-icon-button--danger"
+                                className="vallet-icon-btn"
                                 disabled={submitting}
                                 aria-label={`Excluir vaga ${vaga.numero}`}
                                 title="Excluir vaga"
-                                onClick={() =>
-                                  excluirVaga(inicioPagina + indice)
-                                }
+                                onClick={() => excluirVaga(inicioPagina + indice)}
                               >
                                 <IconeVaga tipo="excluir" />
                               </button>
@@ -912,7 +1017,7 @@ export function CadastroEstacionamento() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" className="parking-empty">
+                        <td colSpan="5" className="vallet-empty-row">
                           Nenhuma vaga cadastrada.
                         </td>
                       </tr>
@@ -920,8 +1025,9 @@ export function CadastroEstacionamento() {
                   </tbody>
                 </table>
               </div>
+
               {vagasIniciais.length > 0 && (
-                <div className="parking-pagination-bar">
+                <div className="vallet-pagination-bar">
                   <span aria-live="polite">
                     {inicioPagina + 1}–
                     {Math.min(
@@ -930,11 +1036,9 @@ export function CadastroEstacionamento() {
                     )}{" "}
                     de {vagasIniciais.length} vagas
                   </span>
-                  <nav
-                    className="parking-pagination"
-                    aria-label="Páginas de vagas"
-                  >
+                  <nav className="vallet-pagination-nav" aria-label="Páginas de vagas">
                     <button
+                      className="vallet-page-btn"
                       type="button"
                       aria-label="Página anterior"
                       disabled={paginaAtual === 1}
@@ -943,16 +1047,15 @@ export function CadastroEstacionamento() {
                       ‹
                     </button>
                     {paginas.map((pagina, indice) => (
-                      <span key={pagina}>
+                      <span key={pagina} style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
                         {indice > 0 && pagina - paginas[indice - 1] > 1 && (
-                          <span className="parking-page-gap">…</span>
+                          <span>…</span>
                         )}
                         <button
+                          className="vallet-page-btn"
                           type="button"
                           aria-label={`Página ${pagina}`}
-                          aria-current={
-                            paginaAtual === pagina ? "page" : undefined
-                          }
+                          aria-current={paginaAtual === pagina ? "page" : undefined}
                           onClick={() => setPaginaVagas(pagina)}
                         >
                           {pagina}
@@ -960,6 +1063,7 @@ export function CadastroEstacionamento() {
                       </span>
                     ))}
                     <button
+                      className="vallet-page-btn"
                       type="button"
                       aria-label="Próxima página"
                       disabled={paginaAtual === totalPaginas}
@@ -970,28 +1074,28 @@ export function CadastroEstacionamento() {
                   </nav>
                 </div>
               )}
-            </section>
+            </div>
           ) : (
-            <div className="parking-edit-vacancies-link">
-              <Link to={`/estacionamentos/${estacionamentoId}`}>
-                Gerenciar vagas do estacionamento
+            <div style={{ paddingBottom: "20px", fontSize: "14px" }}>
+              <Link to={`/estacionamentos/${estacionamentoId}`} style={{ color: "var(--main-color)" }}>
+                Gerenciar vagas deste estacionamento
               </Link>
             </div>
           )}
 
-          <footer className="form-actions">
-            <Link className="cancel-link" to="/estacionamentos">
+          <footer className="vallet-form-footer">
+            <Link className="vallet-cancel-link" to="/estacionamentos">
               Cancelar
             </Link>
             <button
-              className="secondary-action"
+              className="vallet-btn-clear"
               type="reset"
               disabled={submitting}
             >
               {editando ? "Restaurar dados" : "Limpar"}
             </button>
             <button
-              className="primary-button"
+              className="vallet-btn-primary"
               type="submit"
               disabled={submitting}
             >
@@ -1003,10 +1107,11 @@ export function CadastroEstacionamento() {
             </button>
           </footer>
         </form>
+
         {modalVagas && (
           <dialog
             ref={dialogRef}
-            className="parking-vacancy-dialog"
+            className="vallet-dialog"
             aria-labelledby="titulo-editor-vaga"
             onCancel={(event) => {
               event.preventDefault();
@@ -1014,7 +1119,7 @@ export function CadastroEstacionamento() {
             }}
           >
             <form onSubmit={adicionarVagas}>
-              <header className="parking-dialog-header">
+              <header className="vallet-dialog-header">
                 <h2 id="titulo-editor-vaga">
                   {modalVagas === "editar"
                     ? "Editar vaga"
@@ -1024,18 +1129,18 @@ export function CadastroEstacionamento() {
                 </h2>
                 <button
                   type="button"
-                  className="parking-icon-button"
+                  className="vallet-icon-btn"
                   aria-label="Fechar editor de vagas"
                   onClick={fecharModal}
                 >
-                  ×
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
               </header>
-              <div className="parking-dialog-fields">
+              <div className="vallet-dialog-grid">
                 {modoVagas === "lote" ? (
                   <>
-                    <label className="form-field">
-                      <span>Quantidade</span>
+                    <label className="vallet-field">
+                      <span className="vallet-label">Quantidade</span>
                       <input
                         autoFocus
                         type="number"
@@ -1052,8 +1157,8 @@ export function CadastroEstacionamento() {
                         }
                       />
                     </label>
-                    <label className="form-field">
-                      <span>Prefixo</span>
+                    <label className="vallet-field">
+                      <span className="vallet-label">Prefixo</span>
                       <input
                         maxLength="90"
                         placeholder="A-"
@@ -1068,8 +1173,8 @@ export function CadastroEstacionamento() {
                     </label>
                   </>
                 ) : (
-                  <label className="form-field">
-                    <span>Identificador</span>
+                  <label className="vallet-field">
+                    <span className="vallet-label">Identificador</span>
                     <input
                       autoFocus
                       required
@@ -1084,8 +1189,9 @@ export function CadastroEstacionamento() {
                     />
                   </label>
                 )}
-                <label className="form-field">
-                  <span>Tipo da vaga</span>
+                
+                <label className="vallet-field">
+                  <span className="vallet-label">Tipo da vaga</span>
                   <select
                     value={rascunhoVaga.tipo}
                     onChange={(event) =>
@@ -1100,8 +1206,9 @@ export function CadastroEstacionamento() {
                     <option value="Moto">Moto</option>
                   </select>
                 </label>
-                <label className="form-field">
-                  <span>Setor / localização</span>
+                
+                <label className="vallet-field">
+                  <span className="vallet-label">Setor / localização</span>
                   <input
                     maxLength="200"
                     value={rascunhoVaga.localizacao}
@@ -1113,10 +1220,11 @@ export function CadastroEstacionamento() {
                     }
                   />
                 </label>
-                <label className="form-field">
-                  <span>Valor por hora</span>
-                  <div className="currency-input">
-                    <span className="currency-prefix">R$</span>
+                
+                <label className="vallet-field">
+                  <span className="vallet-label">Valor por hora</span>
+                  <div className="vallet-currency-input">
+                    <span className="vallet-currency-prefix">R$</span>
                     <input
                       type="number"
                       required
@@ -1133,20 +1241,22 @@ export function CadastroEstacionamento() {
                   </div>
                 </label>
               </div>
+
               {erroVagas && (
-                <p className="parking-dialog-error" role="alert">
+                <p className="vallet-dialog-error" role="alert">
                   {erroVagas}
                 </p>
               )}
-              <footer className="parking-dialog-actions">
+              
+              <footer className="vallet-dialog-footer">
                 <button
                   type="button"
-                  className="parking-outline-button"
+                  className="vallet-btn-clear"
                   onClick={fecharModal}
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="primary-button">
+                <button type="submit" className="vallet-btn-primary">
                   {modalVagas === "editar"
                     ? "Salvar alterações"
                     : modalVagas === "lote"
@@ -1157,7 +1267,7 @@ export function CadastroEstacionamento() {
             </form>
           </dialog>
         )}
-      </section>
+      </div>
     </Layout>
   );
 }
