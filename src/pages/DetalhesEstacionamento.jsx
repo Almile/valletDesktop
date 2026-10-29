@@ -218,6 +218,17 @@ export default function DetalhesEstacionamento() {
         <header style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "32px", paddingBottom: "24px", borderBottom: "1px solid var(--border-light)" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px" }}>
+
+                {estacionamento.fotoEstacionamentoUri ? (
+                    <img
+                      src={estacionamento.fotoEstacionamentoUri}
+                      alt={estacionamento.nome}
+                      style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "6px" }}
+                    />
+                  ) : (
+                    <span>Sem foto</span>
+                  )}
+
               <h2 style={{ margin: 0, fontSize: "24px", fontWeight: "600", color: "var(--text-main)" }}>
                 {estacionamento?.nome || "Estacionamento"}
               </h2>

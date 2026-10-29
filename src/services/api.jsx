@@ -202,4 +202,21 @@ export const apiService = {
   async excluirVaga(vagaId) {
     return this.request(`/vaga/excluir/${vagaId}`, { method: "DELETE" });
   },
+  
+  async uploadImagem(formData) {
+  const token = this.getToken();
+  const response = await fetch(`${API_URL}/estacionamento/upload_imagem`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token.trim()}`
+    },
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Erro ao fazer upload da imagem.");
+  }
+  return response.json();
+},
 };

@@ -295,6 +295,8 @@ export function CadastroEstacionamento() {
   const [uf, setUf] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [cidade, setCidade] = useState("");
+  const [arquivoImagem, setArquivoImagem] = useState(null);
+  const [previewImagem, setPreviewImagem] = useState(null);
   const formularioRef = useRef(null);
   const vagasPorPagina = 5;
   const totalPaginas = Math.max(
@@ -596,6 +598,12 @@ export function CadastroEstacionamento() {
     }
     if (!editando) payload.vagasIniciais = vagasIniciais;
     try {
+      if (arquivoImagem) {
+      const formUpload = new FormData();
+      formUpload.append("file", arquivoImagem);
+      const upload = await apiService.uploadImagem(formUpload);
+      payload.fotoEstacionamentoUri = upload.url;
+    }
       if (editando) {
         await apiService.atualizarEstacionamento(estacionamentoId, payload);
       } else {
@@ -682,7 +690,27 @@ export function CadastroEstacionamento() {
           <div className="vallet-section">
             <h2 className="vallet-section-title">Dados do estacionamento</h2>
             <hr className="vallet-divider" />
-            
+            <label className="form-field">
+            <span>Foto do estacionamento</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setArquivoImagem(file);
+                  setPreviewImagem(URL.createObjectURL(file));
+                }
+              }}
+            />
+            {previewImagem && (
+              <img
+                src={previewImagem}
+                alt="Pré-visualização"
+                style={{ maxWidth: "200px", marginTop: "8px", borderRadius: "6px" }}
+              />
+            )}
+          </label>
             {/* Primeira linha */}
             <div className="vallet-grid-row-1">
               <label className="vallet-field">
