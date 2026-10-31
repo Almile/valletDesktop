@@ -2,31 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import { apiService } from "../services/api";
-import {
-  applyMask,
-  formatCep,
-  formatCnpj,
-  formatPhone,
-} from "../utils/inputMasks";
+import { applyMask, formatCep, formatCnpj, formatPhone } from "../utils/inputMasks";
+
+const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
 function IconeVaga({ tipo }) {
   const caminhos = {
-    editar: (
-      <>
-        <path d="m16 3 5 5M4 16 16 4a2.1 2.1 0 0 1 3 3L7 19l-4 1z" />
-      </>
-    ),
-    excluir: (
-      <>
-        <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
-      </>
-    ),
+    editar: <path d="m16 3 5 5M4 16 16 4a2.1 2.1 0 0 1 3 3L7 19l-4 1z" />,
+    excluir: <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />,
     adicionar: <path d="M12 5v14M5 12h14" />,
-    lote: (
-      <>
-        <path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1" />
-      </>
-    ),
+    lote: <path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1" />,
   };
   return (
     <svg
@@ -182,7 +167,6 @@ export default function Estacionamentos() {
                 <th>CNPJ</th>
                 <th>Vagas</th>
                 <th>Funcionamento</th>
-                <th>Status</th>
                 <th aria-label="Ações" />
               </tr>
             </thead>
@@ -226,47 +210,44 @@ export default function Estacionamentos() {
                   </td>
                 </tr>
               ) : (
-                estacionamentosFiltrados.map((est) => (
-                  <tr key={est.id || est.cnpj}>
-                    <td>
-                      <strong>{est.nome}</strong>
-                      <br />
-                      <small>
-                        {[
-                          est.endereco?.cidade ||
-                            est.endereco?.localidade ||
-                            est.cidade,
-                          est.endereco?.uf || est.uf,
-                        ]
-                          .filter(Boolean)
-                          .join(" - ") || "Cidade não informada"}
-                      </small>
-                    </td>
-                    <td>{est.cnpj}</td>
-                    <td>
-                      {est.quantidadeVagasTotal ??
-                        est.totalVagas ??
-                        est.vagas_total ??
-                        0}
-                    </td>
-                    <td>
-                      {est.funciona24h === true
-                        ? "24 horas"
-                        : `${est.horarioAbertura}h às ${est.horarioFechamento}h`}
-                    </td>
-                    <td>
-                      <span className="vallet-badge" style={{color: '#057153', background: '#e6f7f1'}}>Ativo</span>
-                    </td>
-                    <td>
-                      <Link
-                        to={`/estacionamentos/${est.id}`}
-                        className="table-action-btn"
-                      >
-                        <span>Ver detalhes</span>
-                      </Link>
-                    </td>
-                  </tr>
-                ))
+              estacionamentosFiltrados.map((est) => (
+                <tr key={est.id || est.cnpj}>
+                  <td>
+                    <strong>{est.nome}</strong>
+                    <br />
+                    <small>
+                      {[
+                        est.endereco?.logradouro || est.logradouro,
+                        est.endereco?.numero || est.numero,
+                        est.endereco?.cidade || est.endereco?.localidade || est.cidade,
+                        est.endereco?.uf || est.uf,
+                      ]
+                        .filter(Boolean)
+                        .join(", ") || "Endereço não informado"}
+                    </small>
+                  </td>
+                  <td>{est.cnpj}</td>
+                  <td>
+                    {est.quantidadeVagasTotal ??
+                      est.totalVagas ??
+                      est.vagas_total ??
+                      0}
+                  </td>
+                  <td>
+                    {est.funciona24h === true
+                      ? "24 horas"
+                      : `${est.horarioAbertura}h às ${est.horarioFechamento}h`}
+                  </td>
+                  <td>
+                    <Link
+                      to={`/estacionamentos/${est.id}`}
+                      className="table-action-btn"
+                    >
+                      <span>Ver detalhes</span>
+                    </Link>
+                  </td>
+                </tr>
+              ))
               )}
             </tbody>
           </table>
@@ -292,11 +273,8 @@ export function CadastroEstacionamento() {
   const acionadorModal = useRef(null);
   const [cep, setCep] = useState("");
   const [bairro, setBairro] = useState("");
-  const [uf, setUf] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [cidade, setCidade] = useState("");
-  const [arquivoImagem, setArquivoImagem] = useState(null);
-  const [previewImagem, setPreviewImagem] = useState(null);
   const formularioRef = useRef(null);
   const vagasPorPagina = 5;
   const totalPaginas = Math.max(
@@ -334,20 +312,21 @@ export function CadastroEstacionamento() {
   const [admins, setAdmins] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [fotoAtual, setFotoAtual] = useState(null);
+  const [novaFoto, setNovaFoto] = useState(null);
+  const [previewNovaFoto, setPreviewNovaFoto] = useState(null);
+
   useEffect(() => {
     async function carregarAdmins() {
       try {
         const listaAdmins = await apiService.getAdminsDisponiveis();
         setAdmins(listaAdmins || []);
       } catch (err) {
-        console.warn(
-          "Não foi possível carregar a lista de administradores:",
-          err,
-        );
+        console.warn("Não foi possível carregar administradores", err);
       }
     }
-    carregarAdmins();
-  }, []);
+    if (!editando) carregarAdmins();
+  }, [editando]);
 
   useEffect(() => {
     if (modalVagas && dialogRef.current && !dialogRef.current.open)
@@ -405,6 +384,8 @@ export function CadastroEstacionamento() {
     setErroVagas("");
     setPaginaVagas(1);
     setModalVagas(null);
+    setNovaFoto(null);
+    setPreviewNovaFoto(null);
   }
 
   function adicionarVagas(event) {
@@ -484,25 +465,31 @@ export function CadastroEstacionamento() {
       };
     }
     setCarregandoDados(true);
-    apiService
-      .getEstacionamentoPorId(estacionamentoId)
-      .then((est) => {
+
+    Promise.all([
+      apiService.getEstacionamentoPorId(estacionamentoId),
+      apiService.getAdmins()
+    ])
+      .then(([est, adminsData]) => {
         if (!ativo) return;
         setDadosIniciais(est);
+        setAdmins(adminsData || []);
         restaurarOpcoes(est);
-        // Preenche os estados de endereço
+        
+        if (est.fotoEstacionamentoUri) {
+          setFotoAtual(est.fotoEstacionamentoUri);
+        }
+
         if (est.endereco && typeof est.endereco === "object") {
           setCep(est.endereco.cep || "");
           setLogradouro(est.endereco.logradouro || "");
           setBairro(est.endereco.bairro || "");
           setCidade(est.endereco.cidade || est.endereco.localidade || "");
-          setUf(est.endereco.uf || "");
         } else if (typeof est.endereco === "string") {
           setLogradouro(est.endereco);
           setCep(est.cep || "");
           setBairro(est.bairro || "");
           setCidade(est.cidade || "");
-          setUf(est.uf || "");
         }
       })
       .catch((err) => {
@@ -535,23 +522,15 @@ export function CadastroEstacionamento() {
       if (data.logradouro) setLogradouro(data.logradouro);
       if (data.bairro) setBairro(data.bairro);
       if (data.cidade) setCidade(data.cidade);
-      if (data.uf) setUf(data.uf);
     }
   }, [editando]);
 
   function valorInicial(campo) {
     const est = dadosIniciais || {};
-    const endereco =
-      typeof est.endereco === "object" && est.endereco ? est.endereco : {};
-    if (campo === "cidade")
-      return endereco.cidade || endereco.localidade || est.cidade || "";
-    if (campo === "logradouro" && typeof est.endereco === "string")
-      return est.endereco;
-    if (
-      ["cep", "logradouro", "complemento", "numero", "bairro", "uf"].includes(
-        campo,
-      )
-    ) {
+    const endereco = typeof est.endereco === "object" && est.endereco ? est.endereco : {};
+    if (campo === "cidade") return endereco.cidade || endereco.localidade || est.cidade || "";
+    if (campo === "logradouro" && typeof est.endereco === "string") return est.endereco;
+    if (["cep", "logradouro", "complemento", "numero", "bairro", "uf"].includes(campo)) {
       return endereco[campo] || est[campo] || "";
     }
     if (campo === "horarioAbertura" || campo === "horarioFechamento") {
@@ -559,6 +538,23 @@ export function CadastroEstacionamento() {
     }
     return est[campo] ?? "";
   }
+
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNovaFoto(file);
+      setPreviewNovaFoto(URL.createObjectURL(file));
+    } else {
+      descartarNovaFoto();
+    }
+  };
+
+  const descartarNovaFoto = () => {
+    setNovaFoto(null);
+    setPreviewNovaFoto(null);
+    const input = document.getElementById("input-foto");
+    if (input) input.value = "";
+  };
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -569,58 +565,59 @@ export function CadastroEstacionamento() {
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
-    const payload = {
-      nome: data.nome.trim(),
-      cnpj: data.cnpj,
-      telefone: data.telefone,
-      adminUid: data.adminUid,
+    
+    let fotoFinalUri = fotoAtual;
 
-      endereco: {
-        cep: data.cep,
-        logradouro: data.logradouro,
-        complemento: data.complemento || "",
-        numero: data.numero,
-        bairro: data.bairro,
-        cidade: data.cidade.trim(),
-        uf: data.uf.trim().toUpperCase(),
-      },
-
-      valorHora: parseFloat(data.valorHora),
-      funciona24h,
-      horarioAbertura: funciona24h ? "00:00" : data.horarioAbertura,
-      horarioFechamento: funciona24h ? "00:00" : data.horarioFechamento,
-    };
-
-    if (!payload.endereco.cidade || !payload.nome) {
-      setErrorMessage("Nome e cidade são obrigatórios.");
-      setSubmitting(false);
-      return;
-    }
-    if (!editando) payload.vagasIniciais = vagasIniciais;
     try {
-      if (arquivoImagem) {
-      const formUpload = new FormData();
-      formUpload.append("file", arquivoImagem);
-      const upload = await apiService.uploadImagem(formUpload);
-      payload.fotoEstacionamentoUri = upload.url;
-    }
+      if (novaFoto) {
+        const imgData = new FormData();
+        imgData.append("file", novaFoto);
+        const uploadRes = await apiService.uploadImagem(imgData);
+        fotoFinalUri = uploadRes.url || uploadRes.fotoEstacionamentoUri;
+      }
+
+      const payload = {
+        nome: data.nome.trim(),
+        cnpj: data.cnpj,
+        telefone: data.telefone,
+        adminUid: data.adminUid || data.admin_id,
+
+        endereco: {
+          cep: data.cep,
+          logradouro: data.logradouro,
+          complemento: data.complemento || "",
+          numero: data.numero,
+          bairro: data.bairro,
+          cidade: data.cidade.trim(),
+          uf: data.uf.trim().toUpperCase(),
+        },
+
+        fotoEstacionamentoUri: fotoFinalUri,
+        valorHora: parseFloat(data.valorHora),
+        funciona24h,
+        horarioAbertura: funciona24h ? "00:00" : data.horarioAbertura,
+        horarioFechamento: funciona24h ? "00:00" : data.horarioFechamento,
+      };
+
+      if (!payload.endereco.cidade || !payload.nome) {
+        setErrorMessage("Nome e cidade são obrigatórios.");
+        setSubmitting(false);
+        return;
+      }
+
+      if (!editando) payload.vagasIniciais = vagasIniciais;
+
       if (editando) {
         await apiService.atualizarEstacionamento(estacionamentoId, payload);
       } else {
         await apiService.criarEstacionamento(payload);
       }
+      
       sessionStorage.removeItem("rascunhoEstacionamento");
-
-      alert(
-        editando
-          ? "Estacionamento atualizado com sucesso!"
-          : "Estacionamento cadastrado com sucesso!",
-      );
-      navigate(
-        editando ? `/estacionamentos/${estacionamentoId}` : "/estacionamentos",
-      );
+      alert(editando ? "Estacionamento atualizado com sucesso!" : "Estacionamento cadastrado com sucesso!");
+      navigate(editando ? `/estacionamentos/${estacionamentoId}` : "/estacionamentos");
     } catch (err) {
-      setErrorMessage(err.message || "Erro ao cadastrar estacionamento.");
+      setErrorMessage(err.message || "Erro ao salvar os dados.");
     } finally {
       setSubmitting(false);
     }
@@ -629,10 +626,10 @@ export function CadastroEstacionamento() {
   if (carregandoDados || (editando && !dadosIniciais)) {
     return (
       <Layout title="Editar estacionamento">
-        <p role={errorMessage ? "alert" : "status"}>
+        <p role={errorMessage ? "alert" : "status"} className="vallet-error-banner">
           {errorMessage || "Carregando estacionamento..."}
         </p>
-        <Link to="/estacionamentos">Voltar para estacionamentos</Link>
+        <Link className="vallet-link-back" to="/estacionamentos">Voltar para estacionamentos</Link>
       </Layout>
     );
   }
@@ -645,7 +642,6 @@ export function CadastroEstacionamento() {
         setCidade(data.localidade || "");
         setBairro(data.bairro || "");
         setLogradouro(data.logradouro || "");
-        setUf(data.uf || "");
       }
     } catch (err) {
       console.warn("Cep não encontrado", err);
@@ -653,24 +649,16 @@ export function CadastroEstacionamento() {
   }
 
   return (
-    <Layout
-      title={editando ? "Editar estacionamento" : "Cadastrar estacionamento"}
-    >
+    <Layout title={editando ? "Editar Estacionamento" : "Cadastrar Estacionamento"}>
       <div className="vallet-form-container">
-        {errorMessage && (
-          <div
-            role="alert"
-            style={{
-              color: "#8b2525",
-              backgroundColor: "#fff0f0",
-              padding: "12px",
-              borderRadius: "6px",
-              marginBottom: "16px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <div role="alert" className="vallet-error-banner">{errorMessage}</div>}
+
+        <h2 className="vallet-section-title">
+          {editando ? "Editar Estacionamento" : "Novo Estacionamento"}
+        </h2>
+        <p className="muted vallet-subtitle">
+          {editando ? "Atualize os dados e imagens do local." : "Preencha os dados e anexe uma foto."}
+        </p>
 
         <form
           ref={formularioRef}
@@ -686,279 +674,124 @@ export function CadastroEstacionamento() {
             sessionStorage.setItem("rascunhoEstacionamento", JSON.stringify(data));
           }}
         >
-          {/* SEÇÃO: Dados do estacionamento */}
-          <div className="vallet-section">
-            <h2 className="vallet-section-title">Dados do estacionamento</h2>
-            <hr className="vallet-divider" />
-            <label className="form-field">
-            <span>Foto do estacionamento</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  setArquivoImagem(file);
-                  setPreviewImagem(URL.createObjectURL(file));
-                }
-              }}
-            />
-            {previewImagem && (
-              <img
-                src={previewImagem}
-                alt="Pré-visualização"
-                style={{ maxWidth: "200px", marginTop: "8px", borderRadius: "6px" }}
-              />
-            )}
-          </label>
-            {/* Primeira linha */}
-            <div className="vallet-grid-row-1">
-              <label className="vallet-field">
-                <span className="vallet-label">Nome</span>
-                <input
-                  name="nome"
-                  type="text"
-                  placeholder="Vallet Centro"
-                  required
-                  defaultValue={valorInicial("nome")}
-                />
-              </label>
 
-              <label className="vallet-field">
-                <span className="vallet-label">CNPJ</span>
-                <input
-                  name="cnpj"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="12.345.678/0001-90"
-                  maxLength="18"
-                  onChange={applyMask(formatCnpj)}
-                  required
-                  defaultValue={valorInicial("cnpj")}
-                />
-              </label>
+        <div className="vallet-section">
+          <div className="vallet-layout-split">
+            
+            <div className="vallet-layout-left">
+              
+              <div className="vallet-form-line">
+                <label className="vallet-field" style={{ gridColumn: "span 5" }}>
+                  <span className="vallet-label">Nome</span>
+                  <input name="nome" type="text" placeholder="Vallet Centro" required defaultValue={valorInicial("nome")} />
+                </label>
+                <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">CNPJ</span>
+                  <input name="cnpj" type="text" placeholder="12.345.678/0001-90" maxLength="18" onChange={applyMask(formatCnpj)} required defaultValue={valorInicial("cnpj")} />
+                </label>
+                <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">Telefone</span>
+                  <input name="telefone" type="tel" placeholder="(13) 99999-1234" maxLength="15" onChange={applyMask(formatPhone)} required defaultValue={valorInicial("telefone")} />
+                </label>
+              </div>
 
-              <div className="vallet-field">
-                <span className="vallet-label">Administrador responsável</span>
-                <div className="vallet-admin-wrapper">
-                  <Link
-                    className="vallet-add-admin-btn"
-                    to="/estacionamentos/novo/gerente"
-                    title="Adicionar administrador"
-                  >
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 5v14M5 12h14"/></svg>
-                  </Link>
-                  {admins.length > 0 ? (
-                    <select
-                      name="adminUid"
-                      required
-                      defaultValue={dadosIniciais?.adminUid || ""}
-                    >
-                      <option value="" disabled>
-                        Selecione...
-                      </option>
-                      {dadosIniciais?.adminUid &&
-                        !admins.some(
-                          (adm) => (adm.uid || adm.id) === dadosIniciais.adminUid
-                        ) && (
-                          <option value={dadosIniciais.adminUid}>
-                            {dadosIniciais.adminEmail || dadosIniciais.adminUid}
-                          </option>
-                        )}
+              <div className="vallet-form-line">
+                <div className="vallet-field" style={{ gridColumn: "span 6" }}>
+                  <span className="vallet-label">Administrador responsável</span>
+                  <div className="vallet-admin-wrapper">
+                    <Link className="vallet-add-admin-btn" to="/estacionamentos/novo/gerente">+</Link>
+                    <select name="adminUid" required defaultValue={dadosIniciais?.adminUid || ""}>
+                      <option value="" disabled>Selecione...</option>
                       {admins.map((adm) => (
-                        <option key={adm.uid || adm.id} value={adm.uid || adm.id}>
-                          {adm.nome || adm.email} ({adm.email})
-                        </option>
+                        <option key={adm.uid || adm.id} value={adm.uid || adm.id}>{adm.nome || adm.email}</option>
                       ))}
                     </select>
-                  ) : (
-                    <input
-                      name="adminUid"
-                      type="text"
-                      placeholder="UID do administrador"
-                      required
-                      defaultValue={valorInicial("adminUid")}
-                    />
-                  )}
+                  </div>
                 </div>
+                <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">CEP</span>
+                  <input name="cep" type="text" placeholder="11010-000" maxLength="9" required defaultValue={valorInicial("cep")} />
+                </label>
+                <label className="vallet-field" style={{ gridColumn: "span 1" }}>
+                  <span className="vallet-label">UF</span>
+                  <select name="uf" required defaultValue={valorInicial("uf") || "SP"}>
+                    {UFS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                  </select>
+                </label>
+              </div>
+
+              <div className="vallet-form-line">
+                <label className="vallet-field" style={{ gridColumn: "span 4" }}>
+                  <span className="vallet-label">Logradouro</span>
+                  <input name="logradouro" type="text" placeholder="Rua João Pessoa" required defaultValue={valorInicial("logradouro")} />
+                </label>
+                <label className="vallet-field" style={{ gridColumn: "span 1" }}>
+                  <span className="vallet-label">Número</span>
+                  <input name="numero" type="text" placeholder="120" required defaultValue={valorInicial("numero")} />
+                </label>
+                <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">Bairro</span>
+                  <input name="bairro" type="text" placeholder="Centro" required defaultValue={valorInicial("bairro")} />
+                </label>
+                <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">Complemento</span>
+                  <input name="complemento" type="text" placeholder="Opcional" defaultValue={valorInicial("complemento")} />
+                </label>
+              </div>
+
+            </div>
+
+            <div className="vallet-photo-area">
+              <span className="vallet-label">{editando ? "Foto Atual" : "Foto do Estacionamento"}</span>
+              {previewNovaFoto || fotoAtual ? (
+                <div className="vallet-photo-box">
+                  <img src={previewNovaFoto || fotoAtual} alt="Prévia" />
+                </div>
+              ) : (
+                <div className="vallet-photo-dropzone">
+                  <p className="muted" style={{ fontSize: "13px" }}>Nenhuma foto</p>
+                </div>
+              )}
+              <div className="vallet-photo-actions">
+                <input id="input-foto" type="file" accept="image/*" onChange={handleFotoChange} className="vallet-file-input" />
               </div>
             </div>
 
-            {/* Segunda linha */}
-            <div className="vallet-grid-row-2">
-              <label className="vallet-field">
-                <span className="vallet-label">Telefone</span>
-                <input
-                  name="telefone"
-                  type="tel"
-                  placeholder="(13) 99999-1234"
-                  maxLength="15"
-                  onChange={applyMask(formatPhone)}
-                  required
-                  defaultValue={valorInicial("telefone")}
-                />
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">CEP</span>
-                <input
-                  name="cep"
-                  type="text"
-                  value={cep}
-                  inputMode="numeric"
-                  placeholder="11010-000"
-                  maxLength="9"
-                  onChange={(e) => { applyMask(formatCep)(e); setCep(e.target.value);}}
-                  onBlur={()=>{findCEP(cep)}}
-                  required
-                  defaultValue={valorInicial("cep")}
-                />
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">Cidade</span>
-                <input
-                  name="cidade"
-                  type="text"
-                  placeholder="Santos"
-                  value={cidade}
-                  onChange={(e) => setCidade(e.target.value)}
-                  required
-                  defaultValue={valorInicial("cidade")}
-                />
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">UF</span>
-                <input
-                  name="uf"
-                  type="text"
-                  maxLength="2"
-                  placeholder="SP"
-                  value={uf}
-                  onChange={(e) => setUf(e.target.value)}
-                  required
-                  defaultValue={valorInicial("uf")}
-                />
-              </label>
-            </div>
-
-            {/* Terceira linha */}
-            <div className="vallet-grid-row-3">
-              <label className="vallet-field">
-                <span className="vallet-label">Logradouro</span>
-                <input
-                  name="logradouro"
-                  type="text"
-                  placeholder="Rua João Pessoa"
-                  value={logradouro}
-                  onChange={(e) => setLogradouro(e.target.value)}
-                  required
-                  defaultValue={valorInicial("logradouro")}
-                />
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">Número</span>
-                <input
-                  name="numero"
-                  type="text"
-                  placeholder="120"
-                  required
-                  defaultValue={valorInicial("numero")}
-                />
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">Bairro</span>
-                <input
-                  name="bairro"
-                  type="text"
-                  placeholder="Centro"
-                  value={bairro}
-                  onChange={(e) => setBairro(e.target.value)}
-                  required
-                  defaultValue={valorInicial("bairro")}
-                />
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">Complemento</span>
-                <input
-                  name="complemento"
-                  type="text"
-                  placeholder="Opcional"
-                  defaultValue={valorInicial("complemento")}
-                />
-              </label>
-            </div>
           </div>
+        </div>
 
-          {/* SEÇÃO: Funcionamento e valores */}
-          <div className="vallet-section">
-            <h2 className="vallet-section-title">Funcionamento e valores</h2>
-            <hr className="vallet-divider" />
-            
-            <div className="vallet-grid-operation">
-              <label className="vallet-field">
-                <span className="vallet-label">Valor por hora</span>
-                <div className="vallet-currency-input">
-                  <span className="vallet-currency-prefix">R$</span>
-                  <input
-                    name="valorHora"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="15.00"
-                    required
-                    defaultValue={valorInicial("valorHora")}
-                  />
-                </div>
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">Abertura</span>
-                <input
-                  name="horarioAbertura"
-                  type="time"
-                  disabled={funciona24h}
-                  required={!funciona24h}
-                  defaultValue={valorInicial("horarioAbertura")}
-                />
-              </label>
-
-              <label className="vallet-field">
-                <span className="vallet-label">Fechamento</span>
-                <input
-                  name="horarioFechamento"
-                  type="time"
-                  disabled={funciona24h}
-                  required={!funciona24h}
-                  defaultValue={valorInicial("horarioFechamento")}
-                />
-              </label>
-
-              <div className="vallet-field-switch">
-                <button
-                  className="vallet-toggle"
-                  type="button"
-                  role="switch"
-                  aria-checked={funciona24h}
-                  onClick={() => setFunciona24h((ativo) => !ativo)}
-                >
-                  <span
-                    className="vallet-toggle-track"
-                    aria-hidden="true"
-                  >
-                    <span className="vallet-toggle-thumb" />
-                  </span>
-                  <span>Funciona 24 horas</span>
-                </button>
+        <div className="vallet-section">
+          <h2 className="vallet-section-title">Funcionamento e valores</h2>
+          <hr className="vallet-divider" />
+          
+          <div className="vallet-form-line" style={{ alignItems: "end" }}>
+            <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+              <span className="vallet-label">Valor por hora</span>
+              <div className="vallet-currency-input">
+                <span className="vallet-currency-prefix">R$</span>
+                <input name="valorHora" type="number" min="0" step="0.01" placeholder="15.00" required defaultValue={valorInicial("valorHora")} />
               </div>
+            </label>
+
+            <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+              <span className="vallet-label">Abertura</span>
+              <input name="horarioAbertura" type="time" disabled={funciona24h} required={!funciona24h} defaultValue={valorInicial("horarioAbertura")} />
+            </label>
+
+            <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+              <span className="vallet-label">Fechamento</span>
+              <input name="horarioFechamento" type="time" disabled={funciona24h} required={!funciona24h} defaultValue={valorInicial("horarioFechamento")} />
+            </label>
+
+            <div className="vallet-field-switch" style={{ gridColumn: "span 3", display: "flex", alignItems: "center", height: "40px" }}>
+              <button className="vallet-toggle" type="button" role="switch" aria-checked={funciona24h} onClick={() => setFunciona24h((ativo) => !ativo)}>
+                <span className="vallet-toggle-track" aria-hidden="true"><span className="vallet-toggle-thumb" /></span>
+                <span>Funciona 24h</span>
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* SEÇÃO: Vagas do estacionamento */}
           {!editando ? (
             <div className="vallet-section" aria-labelledby="titulo-vagas">
               <div className="vallet-vacancies-header">
@@ -1112,7 +945,7 @@ export function CadastroEstacionamento() {
           )}
 
           <footer className="vallet-form-footer">
-            <Link className="vallet-cancel-link" to="/estacionamentos">
+            <Link className="vallet-cancel-link" to={editando ? `/estacionamentos/${estacionamentoId}` : "/estacionamentos"}>
               Cancelar
             </Link>
             <button

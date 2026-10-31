@@ -615,8 +615,6 @@ select {
 }
 
 
-/* ===== NOVA IDENTIDADE DA PÁGINA "CADASTRAR ESTACIONAMENTO" (vallet-*) ===== */
-
 .vallet-form-container {
   background: var(--surface);
   border: 1px solid var(--border-light);
@@ -1124,4 +1122,213 @@ select {
 .table-action-btn:hover {
   background: var(--main-color);
   color: #fff;
+}
+
+.vallet-layout-split {
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  margin-bottom: 24px;
+  align-items: start;
+}
+
+.vallet-layout-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vallet-form-line {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 16px;
+}
+
+.vallet-photo-area {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-light);
+  padding-left: 26px;
+  gap: 12px;
+}
+
+.vallet-photo-box {
+  width: 100%;
+  height: 220px;
+}
+
+.vallet-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.vallet-photo-dropzone {
+  border: 1px dashed var(--border-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  background: var(--bg-main);
+  text-align: center;
+}
+
+.vallet-photo-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.vallet-row-4 {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 2fr 1fr;
+  gap: 16px;
+}
+
+.vallet-photo-comparison {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.vallet-photo-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--secondary-color);
+  text-transform: uppercase;
+}
+
+.vallet-photo-label-new {
+  color: var(--main-color);
+}
+
+.vallet-subtitle {
+  margin-bottom: 24px;
+}
+
+.vallet-photo-empty-text {
+  font-size: 13px;
+}
+
+.vallet-file-input {
+  font-size: 13px;
+  width: 100%;
+  flex: 1;
+}
+
+.vallet-btn-discard {
+  height: auto;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.vallet-details-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+.vallet-details-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.vallet-details-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.vallet-details-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.vallet-badge-active {
+  color: #057153;
+  background: #e6f7f1;
+}
+.vallet-details-code {
+  margin: 0;
+  font-size: 13px;
+  color: var(--secondary-color);
+}
+.vallet-details-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.vallet-link-back {
+  margin-left: 12px;
+}
+.vallet-error-banner {
+  color: #8b2525;
+  background-color: #fff0f0;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+.vallet-info-text {
+  font-size: 13px;
+  margin-top: 4px;
+}
+.vallet-btn-secondary {
+  text-decoration: none; 
+}
+.vallet-status-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+.vallet-badge-livre {
+  color: #057153;
+  background-color: #e6f7f1;
+}
+.vallet-badge-ocupada {
+  color: var(--text-main);
+  background-color: var(--border-light);
+}
+.vallet-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.vallet-card-resumo {
+  padding: 16px;
+  background: var(--support-light);
+  border-radius: 8px;
+}
+.vallet-card-label {
+  color: var(--secondary-color);
+}
+.vallet-card-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--main-color);
+  margin-top: 4px;
+}
+.vallet-filter-bar {
+  margin-bottom: 16px;
+  background: var(--bg-main);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+@media (max-width: 1024px) {
+  .vallet-layout-split { grid-template-columns: 1fr; }
+  .vallet-row-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .vallet-row-4 { grid-template-columns: 1fr; }
 }
