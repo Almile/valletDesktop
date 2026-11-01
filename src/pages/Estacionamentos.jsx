@@ -577,26 +577,26 @@ export function CadastroEstacionamento() {
       }
 
       const payload = {
-        nome: data.nome.trim(),
-        cnpj: data.cnpj,
-        telefone: data.telefone,
-        adminUid: data.adminUid || data.admin_id,
+        nome: (data.nome || "").trim(),
+        cnpj: (data.cnpj || "").trim(),
+        telefone: (data.telefone || "").trim(),
+        adminUid: data.adminUid,
 
         endereco: {
-          cep: data.cep,
-          logradouro: data.logradouro,
-          complemento: data.complemento || "",
-          numero: data.numero,
-          bairro: data.bairro,
-          cidade: data.cidade.trim(),
-          uf: data.uf.trim().toUpperCase(),
+          cep: (data.cep || "").trim(),
+          logradouro: (data.logradouro || "").trim(),
+          complemento: (data.complemento || "").trim(),
+          numero: (data.numero || "").trim(),
+          bairro: (data.bairro || "").trim(),
+          cidade: (data.cidade || "").trim(),
+          uf: (data.uf || "").trim().toUpperCase(),
         },
 
-        fotoEstacionamentoUri: fotoFinalUri,
-        valorHora: parseFloat(data.valorHora),
+        valorHora: parseFloat(data.valorHora) || 0,
         funciona24h,
         horarioAbertura: funciona24h ? "00:00" : data.horarioAbertura,
         horarioFechamento: funciona24h ? "00:00" : data.horarioFechamento,
+        fotoEstacionamentoUri: fotoFinalUri,
       };
 
       if (!payload.endereco.cidade || !payload.nome) {
@@ -720,25 +720,51 @@ export function CadastroEstacionamento() {
                 </label>
               </div>
 
-              <div className="vallet-form-line">
+             <div className="vallet-form-line">
                 <label className="vallet-field" style={{ gridColumn: "span 4" }}>
-                  <span className="vallet-label">Logradouro</span>
-                  <input name="logradouro" type="text" placeholder="Rua João Pessoa" required defaultValue={valorInicial("logradouro")} />
-                </label>
-                <label className="vallet-field" style={{ gridColumn: "span 1" }}>
-                  <span className="vallet-label">Número</span>
-                  <input name="numero" type="text" placeholder="120" required defaultValue={valorInicial("numero")} />
+                  <span className="vallet-label">Cidade</span>
+                  <input 
+                    name="cidade" 
+                    type="text" 
+                    placeholder="Santos" 
+                    required 
+                    value={cidade} 
+                    onChange={(e) => setCidade(e.target.value)} 
+                  />
                 </label>
                 <label className="vallet-field" style={{ gridColumn: "span 2" }}>
                   <span className="vallet-label">Bairro</span>
-                  <input name="bairro" type="text" placeholder="Centro" required defaultValue={valorInicial("bairro")} />
+                  <input 
+                    name="bairro" 
+                    type="text" 
+                    placeholder="Centro" 
+                    required 
+                    value={bairro} 
+                    onChange={(e) => setBairro(e.target.value)} 
+                  />
+                </label>
+                <label className="vallet-field" style={{ gridColumn: "span 4" }}>
+                  <span className="vallet-label">Logradouro</span>
+                  <input 
+                    name="logradouro" 
+                    type="text" 
+                    placeholder="Rua João Pessoa" 
+                    required 
+                    value={logradouro} 
+                    onChange={(e) => setLogradouro(e.target.value)} 
+                  />
                 </label>
                 <label className="vallet-field" style={{ gridColumn: "span 2" }}>
-                  <span className="vallet-label">Complemento</span>
-                  <input name="complemento" type="text" placeholder="Opcional" defaultValue={valorInicial("complemento")} />
+                  <span className="vallet-label">Número</span>
+                  <input 
+                    name="numero" 
+                    type="text" 
+                    placeholder="120" 
+                    required 
+                    defaultValue={valorInicial("numero")} 
+                  />
                 </label>
               </div>
-
             </div>
 
             <div className="vallet-photo-area">
