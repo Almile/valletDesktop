@@ -654,7 +654,7 @@ export function CadastroEstacionamento() {
         {errorMessage && <div role="alert" className="vallet-error-banner">{errorMessage}</div>}
 
         <h2 className="vallet-section-title">
-          {editando ? "Editar Estacionamento" : "Novo Estacionamento"}
+          {editando ? "Editar Estacionamento" : "Informações do Estacionamento"}
         </h2>
         <p className="muted vallet-subtitle">
           {editando ? "Atualize os dados e imagens do local." : "Preencha os dados e anexe uma foto."}
@@ -721,7 +721,7 @@ export function CadastroEstacionamento() {
               </div>
 
              <div className="vallet-form-line">
-                <label className="vallet-field" style={{ gridColumn: "span 4" }}>
+                <label className="vallet-field" style={{ gridColumn: "span 2" }}>
                   <span className="vallet-label">Cidade</span>
                   <input 
                     name="cidade" 
@@ -754,7 +754,7 @@ export function CadastroEstacionamento() {
                     onChange={(e) => setLogradouro(e.target.value)} 
                   />
                 </label>
-                <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+                <label className="vallet-field" style={{ gridColumn: "span 1" }}>
                   <span className="vallet-label">Número</span>
                   <input 
                     name="numero" 
