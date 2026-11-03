@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { apiService } from "../services/api";
@@ -6,9 +6,6 @@ import { apiService } from "../services/api";
 function IconeVaga({ tipo }) {
   const caminhos = {
     editar: <path d="m16 3 5 5M4 16 16 4a2.1 2.1 0 0 1 3 3L7 19l-4 1z" />,
-    excluir: <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />,
-    adicionar: <path d="M12 5v14M5 12h14" />,
-    lote: <path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1" />,
   };
   return (
     <svg
@@ -27,61 +24,48 @@ function IconeVaga({ tipo }) {
   );
 }
 
+const infoBoxStyle = {
+  height: "40px",
+  fontSize: "15px",
+  padding: "0 12px",
+  background: "var(--bg-main)",
+  borderRadius: "6px",
+  border: "1px solid var(--border-light)",
+  display: "flex",
+  alignItems: "center",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis"
+};
+
 export default function DetalhesEstacionamento() {
   const { estacionamentoId } = useParams();
   const navigate = useNavigate();
   const [estacionamento, setEstacionamento] = useState(null);
   const [vagas, setVagas] = useState([]);
+  const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("todas");
   const [availability, setAvailability] = useState("todas");
-  const [showModalSingle, setShowModalSingle] = useState(false);
-  const [showModalLote, setShowModalLote] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  const dialogSingleRef = useRef(null);
-  const dialogLoteRef = useRef(null);
-
-  const [novaVaga, setNovaVaga] = useState({
-    numero: "", localizacao: "", preco: 0, tipo: "Comum", preferencial: false,
-  });
-
-  const [loteVagas, setLoteVagas] = useState({
-    quantidade: 10, prefixo: "A-", tipo: "Comum", preco: 0, localizacao: "", preferencial: false,
-  });
 
   useEffect(() => {
     carregarDados();
   }, [estacionamentoId]);
 
-  useEffect(() => {
-    if (showModalSingle && dialogSingleRef.current && !dialogSingleRef.current.open) {
-      dialogSingleRef.current.showModal();
-    } else if (!showModalSingle && dialogSingleRef.current?.open) {
-      dialogSingleRef.current.close();
-    }
-  }, [showModalSingle]);
-
-  useEffect(() => {
-    if (showModalLote && dialogLoteRef.current && !dialogLoteRef.current.open) {
-      dialogLoteRef.current.showModal();
-    } else if (!showModalLote && dialogLoteRef.current?.open) {
-      dialogLoteRef.current.close();
-    }
-  }, [showModalLote]);
-
   async function carregarDados() {
     try {
       setLoading(true);
       setError("");
-      const [estData, vagasData] = await Promise.all([
+      const [estData, vagasData, adminsData] = await Promise.all([
         apiService.getEstacionamentoPorId(estacionamentoId).catch(() => null),
-        apiService.getVagasEstacionamento(estacionamentoId),
+        apiService.getVagasEstacionamento(estacionamentoId).catch(() => []),
+        apiService.getAdmins().catch(() => [])
       ]);
       if (estData) setEstacionamento(estData);
       setVagas(vagasData || []);
+      setAdmins(adminsData || []);
     } catch (err) {
       setError(err.message || "Erro ao carregar os dados do estacionamento.");
     } finally {
@@ -99,39 +83,6 @@ export default function DetalhesEstacionamento() {
       return matchesSearch && matchesCategory && matchesAvailability;
     });
   }, [availability, category, search, vagas]);
-
-  async function handleCriarVaga(e) {
-    e.preventDefault();
-    try {
-      setSubmitting(true);
-      await apiService.criarVaga({
-        ...novaVaga, preco: parseFloat(novaVaga.preco) || 0, estacionamentoId,
-      });
-      setShowModalSingle(false);
-      setNovaVaga({ numero: "", localizacao: "", preco: 0, tipo: "Comum", preferencial: false });
-      await carregarDados();
-    } catch (err) {
-      alert(err.message || "Erro ao criar vaga.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function handleCriarLote(e) {
-    e.preventDefault();
-    try {
-      setSubmitting(true);
-      await apiService.criarVagasEmLote({
-        ...loteVagas, quantidade: Number(loteVagas.quantidade), preco: parseFloat(loteVagas.preco) || 0, estacionamentoId,
-      });
-      setShowModalLote(false);
-      await carregarDados();
-    } catch (err) {
-      alert(err.message || "Erro ao gerar vagas em lote.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   async function excluir_estacionamento(estacionamentoId) {
     if (!window.confirm("Deseja realmente excluir este estacionamento? Esta ação não pode ser desfeita.")) return;
@@ -165,84 +116,161 @@ export default function DetalhesEstacionamento() {
   }
 
   const enderecoObj = typeof estacionamento?.endereco === "object" ? estacionamento.endereco : {};
+  
+  // Encontrar o nome do Administrador a partir do ID
+  const adminResp = admins.find(adm => adm.uid === estacionamento?.adminUid || adm.id === estacionamento?.adminUid);
+  const adminName = adminResp ? (adminResp.nome || adminResp.email) : (estacionamento?.adminUid || "-");
 
   return (
     <Layout title="Dados do estacionamento">
       <div className="vallet-form-container">
         
-        <header className="vallet-details-header">
-          <div>
-            <div className="vallet-details-title-group">
-                {estacionamento.fotoEstacionamentoUri ? (
-                    <img src={estacionamento.fotoEstacionamentoUri} alt={estacionamento.nome} className="vallet-details-thumb" />
-                  ) : (
-                    <span>Sem foto</span>
-                  )}
-              <h2 className="vallet-details-title">{estacionamento?.nome || "Estacionamento"}</h2>
-              <span className="vallet-badge vallet-badge-active">Ativo</span>
-            </div>
-            <p className="vallet-details-code">Código do sistema: {estacionamentoId}</p>
+        <header className="vallet-details-header" style={{ alignItems: "center" }}>
+          <div className="vallet-details-title-group" style={{ display: "flex", alignItems: "center", gap: "12px", margin: 0 }}>
+            <Link 
+              to="/estacionamentos" 
+              title="Voltar" 
+              aria-label="Voltar" 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                justifyContent: 'center', 
+                color: 'var(--text-main)', 
+                textDecoration: 'none',
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-light)',
+                background: 'var(--surface)',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-main)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'var(--surface)'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <h2 className="vallet-details-title" style={{ margin: 0 }}>
+              {estacionamento?.nome || "Estacionamento"}
+            </h2>
           </div>
 
-          <div className="vallet-details-actions">
+          <div className="vallet-details-actions" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <button className="vallet-btn-clear" type="button" onClick={() => excluir_estacionamento(estacionamentoId)}>
               Excluir estacionamento
             </button>
             {estacionamento && (
               <Link className="vallet-btn-secondary" to={`/estacionamentos/${estacionamentoId}/editar`}>
                 <IconeVaga tipo="editar" />
-                Editar
+                Editar Informações e Vagas
               </Link>
             )}
-            <Link className="vallet-cancel-link vallet-link-back" to="/estacionamentos">
-              Voltar
-            </Link>
           </div>
         </header>
 
         {error && <div role="alert" className="vallet-error-banner">{error}</div>}
 
         <div className="vallet-section">
-          <h3 className="vallet-section-title">Informações principais</h3>
-          <hr className="vallet-divider" />
-          <div className="vallet-grid-row-1">
-            <div className="vallet-field">
-              <span className="vallet-label">Nome</span>
-              <div className="vallet-info-text">{estacionamento?.nome || "-"}</div>
+          <div className="vallet-layout-split">
+            <div className="vallet-layout-left">
+              
+              <div className="vallet-form-line">
+                <div className="vallet-field" style={{ gridColumn: "span 5" }}>
+                  <span className="vallet-label">Nome</span>
+                  <div style={infoBoxStyle}>{estacionamento?.nome || "-"}</div>
+                </div>
+                <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">CNPJ</span>
+                  <div style={infoBoxStyle}>{estacionamento?.cnpj || "-"}</div>
+                </div>
+                <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">Telefone</span>
+                  <div style={infoBoxStyle}>{estacionamento?.telefone || "-"}</div>
+                </div>
+              </div>
+
+              <div className="vallet-form-line">
+                <div className="vallet-field" style={{ gridColumn: "span 6" }}>
+                  <span className="vallet-label">Administrador</span>
+                  <div style={infoBoxStyle}>{adminName}</div>
+                </div>
+                <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">CEP</span>
+                  <div style={infoBoxStyle}>{enderecoObj?.cep || "-"}</div>
+                </div>
+                <div className="vallet-field" style={{ gridColumn: "span 1" }}>
+                  <span className="vallet-label">UF</span>
+                  <div style={infoBoxStyle}>{enderecoObj?.uf || "-"}</div>
+                </div>
+              </div>
+
+              <div className="vallet-form-line">
+                <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">Cidade</span>
+                  <div style={infoBoxStyle}>
+                    {enderecoObj?.cidade || enderecoObj?.localidade || estacionamento?.cidade || "-"}
+                  </div>
+                </div>
+                <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <span className="vallet-label">Bairro</span>
+                  <div style={infoBoxStyle}>{enderecoObj?.bairro || "-"}</div>
+                </div>
+                <div className="vallet-field" style={{ gridColumn: "span 4" }}>
+                  <span className="vallet-label">Logradouro</span>
+                  <div style={infoBoxStyle}>
+                    {enderecoObj?.logradouro || (typeof estacionamento?.endereco === "string" ? estacionamento.endereco : "") || "-"}
+                  </div>
+                </div>
+                <div className="vallet-field" style={{ gridColumn: "span 1" }}>
+                  <span className="vallet-label">Número</span>
+                  <div style={infoBoxStyle}>{enderecoObj?.numero || "-"}</div>
+                </div>
+              </div>
+
             </div>
-            <div className="vallet-field">
-              <span className="vallet-label">CNPJ</span>
-              <div className="vallet-info-text">{estacionamento?.cnpj || "-"}</div>
-            </div>
-            <div className="vallet-field">
-              <span className="vallet-label">Telefone</span>
-              <div className="vallet-info-text">{estacionamento?.telefone || "-"}</div>
+
+            <div className="vallet-photo-area">
+              <span className="vallet-label">Foto do Estacionamento</span>
+              <div className="vallet-photo-box">
+                {estacionamento?.fotoEstacionamentoUri ? (
+                  <img src={estacionamento.fotoEstacionamentoUri} alt="Foto" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                ) : (
+                  <div className="vallet-photo-dropzone">
+                    <p className="muted" style={{ fontSize: "13px" }}>Nenhuma foto</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         <div className="vallet-section">
-          <h3 className="vallet-section-title">Endereço</h3>
+          <h3 className="vallet-section-title">Funcionamento e valores</h3>
           <hr className="vallet-divider" />
-          <div className="vallet-grid-row-3">
-            <div className="vallet-field">
-              <span className="vallet-label">Logradouro</span>
-              <div className="vallet-info-text">
-                {[enderecoObj.logradouro || (typeof estacionamento?.endereco === "string" ? estacionamento.endereco : ""), enderecoObj.numero].filter(Boolean).join(", ") || "-"}
+          <div className="vallet-form-line">
+            <div className="vallet-field" style={{ gridColumn: "span 3" }}>
+              <span className="vallet-label">Valor por hora</span>
+              <div style={infoBoxStyle}>
+                {parseFloat(estacionamento?.valorHora || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </div>
             </div>
-            <div className="vallet-field">
-              <span className="vallet-label">CEP</span>
-              <div className="vallet-info-text">{enderecoObj.cep || "-"}</div>
+            <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+              <span className="vallet-label">Abertura</span>
+              <div style={infoBoxStyle}>
+                {estacionamento?.funciona24h ? "24h" : estacionamento?.horarioAbertura || "-"}
+              </div>
             </div>
-            <div className="vallet-field">
-              <span className="vallet-label">Bairro</span>
-              <div className="vallet-info-text">{enderecoObj.bairro || "-"}</div>
+            <div className="vallet-field" style={{ gridColumn: "span 2" }}>
+              <span className="vallet-label">Fechamento</span>
+              <div style={infoBoxStyle}>
+                {estacionamento?.funciona24h ? "24h" : estacionamento?.horarioFechamento || "-"}
+              </div>
             </div>
-            <div className="vallet-field">
-              <span className="vallet-label">Cidade / UF</span>
-              <div className="vallet-info-text">
-                {enderecoObj.cidade || enderecoObj.localidade || estacionamento?.cidade || "-"} - {enderecoObj.uf || "-"}
+            <div className="vallet-field" style={{ gridColumn: "span 3" }}>
+              <span className="vallet-label">Status 24h</span>
+              <div style={infoBoxStyle}>
+                {estacionamento?.funciona24h ? "Sim" : "Não"}
               </div>
             </div>
           </div>
@@ -268,18 +296,6 @@ export default function DetalhesEstacionamento() {
             <div className="vallet-card-resumo">
               <div className="vallet-label vallet-card-label">Ocupadas</div>
               <div className="vallet-card-value">{vagas.filter((v) => !v.disponivel).length}</div>
-            </div>
-          </div>
-
-          <div className="vallet-vacancies-header">
-            <h4 className="vallet-vacancies-title">Lista de vagas</h4>
-            <div className="vallet-actions-group">
-              <button className="vallet-btn-secondary" type="button" onClick={() => setShowModalLote(true)}>
-                <IconeVaga tipo="lote" /> Gerar em lote
-              </button>
-              <button className="vallet-btn-secondary" type="button" onClick={() => setShowModalSingle(true)}>
-                <IconeVaga tipo="adicionar" /> Nova vaga
-              </button>
             </div>
           </div>
 
@@ -311,7 +327,12 @@ export default function DetalhesEstacionamento() {
             <table className="vallet-table">
               <thead>
                 <tr>
-                  <th>Vaga</th><th>Localização</th><th>Categoria</th><th>Preço/h</th><th>Preferencial</th><th>Disponibilidade</th><th aria-label="Ações" />
+                  <th>Vaga</th>
+                  <th>Localização</th>
+                  <th>Categoria</th>
+                  <th>Preço/h</th>
+                  <th>Preferencial</th>
+                  <th>Disponibilidade</th>
                 </tr>
               </thead>
               <tbody>
@@ -330,22 +351,10 @@ export default function DetalhesEstacionamento() {
                           </span>
                         </button>
                       </td>
-                      <td>
-                        <div className="vallet-row-actions">
-                          <button type="button" className="vallet-icon-btn" title="Excluir vaga" onClick={async () => {
-                            if (window.confirm(`Deseja excluir a vaga ${vacancy.numero}?`)) {
-                              await apiService.excluirVaga(vacancy.id);
-                              carregarDados();
-                            }
-                          }}>
-                            <IconeVaga tipo="excluir" />
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   ))
                 ) : (
-                  <tr><td className="vallet-empty-row" colSpan="7">Nenhuma vaga encontrada com esses filtros.</td></tr>
+                  <tr><td className="vallet-empty-row" colSpan="6">Nenhuma vaga encontrada com esses filtros.</td></tr>
                 )}
               </tbody>
             </table>

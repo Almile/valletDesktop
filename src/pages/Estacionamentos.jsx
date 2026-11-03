@@ -263,7 +263,7 @@ export function CadastroEstacionamento() {
   const editando = Boolean(estacionamentoId);
   const [dadosIniciais, setDadosIniciais] = useState(null);
   const [carregandoDados, setCarregandoDados] = useState(editando);
-  const [vagasIniciais, setVagasIniciais] = useState([]);
+  const [listaVagas, setListaVagas] = useState([]);
   const [modoVagas, setModoVagas] = useState("individual");
   const [erroVagas, setErroVagas] = useState("");
   const [modalVagas, setModalVagas] = useState(null);
@@ -279,11 +279,11 @@ export function CadastroEstacionamento() {
   const vagasPorPagina = 5;
   const totalPaginas = Math.max(
     1,
-    Math.ceil(vagasIniciais.length / vagasPorPagina),
+    Math.ceil(listaVagas.length / vagasPorPagina),
   );
   const paginaAtual = Math.min(paginaVagas, totalPaginas);
   const inicioPagina = (paginaAtual - 1) * vagasPorPagina;
-  const vagasVisiveis = vagasIniciais.slice(
+  const vagasVisiveis = listaVagas.slice(
     inicioPagina,
     inicioPagina + vagasPorPagina,
   );
@@ -317,16 +317,57 @@ export function CadastroEstacionamento() {
   const [previewNovaFoto, setPreviewNovaFoto] = useState(null);
 
   useEffect(() => {
-    async function carregarAdmins() {
-      try {
-        const listaAdmins = await apiService.getAdminsDisponiveis();
-        setAdmins(listaAdmins || []);
-      } catch (err) {
-        console.warn("Não foi possível carregar administradores", err);
-      }
+    let ativo = true;
+    setErrorMessage("");
+    setDadosIniciais(null);
+    if (!estacionamentoId) {
+      restaurarOpcoes(null, []);
+      setCarregandoDados(false);
+      apiService.getAdmins().then(res => setAdmins(res || []));
+      return () => {
+        ativo = false;
+      };
     }
-    if (!editando) carregarAdmins();
-  }, [editando]);
+    setCarregandoDados(true);
+
+    Promise.all([
+      apiService.getEstacionamentoPorId(estacionamentoId),
+      apiService.getAdmins(),
+      apiService.getVagasEstacionamento(estacionamentoId).catch(() => [])
+    ])
+      .then(([est, adminsData, vagasData]) => {
+        if (!ativo) return;
+        setDadosIniciais(est);
+        setAdmins(adminsData || []);
+        restaurarOpcoes(est, vagasData || []);
+        
+        if (est.fotoEstacionamentoUri) {
+          setFotoAtual(est.fotoEstacionamentoUri);
+        }
+
+        if (est.endereco && typeof est.endereco === "object") {
+          setCep(est.endereco.cep || "");
+          setLogradouro(est.endereco.logradouro || "");
+          setBairro(est.endereco.bairro || "");
+          setCidade(est.endereco.cidade || est.endereco.localidade || "");
+        } else if (typeof est.endereco === "string") {
+          setLogradouro(est.endereco);
+          setCep(est.cep || "");
+          setBairro(est.bairro || "");
+          setCidade(est.cidade || "");
+        }
+      })
+      .catch((err) => {
+        if (ativo)
+          setErrorMessage(err.message || "Erro ao carregar estacionamento.");
+      })
+      .finally(() => {
+        if (ativo) setCarregandoDados(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [estacionamentoId]);
 
   useEffect(() => {
     if (modalVagas && dialogRef.current && !dialogRef.current.open)
@@ -356,30 +397,37 @@ export function CadastroEstacionamento() {
         ? { ...vagaVazia, preco: precoBase }
         : {
             ...vagaVazia,
-            ...vagasIniciais[indice],
-            preco: String(vagasIniciais[indice].preco),
+            ...listaVagas[indice],
+            preco: String(listaVagas[indice].preco),
           },
     );
     setErroVagas("");
     setModalVagas(modo);
   }
 
-  function excluirVaga(indice) {
-    const vaga = vagasIniciais[indice];
+  async function excluirVaga(indice) {
+    const vaga = listaVagas[indice];
     if (!window.confirm(`Excluir a vaga ${vaga.numero}?`)) return;
-    const restantes = vagasIniciais.filter((_, i) => i !== indice);
-    setVagasIniciais(restantes);
-    setPaginaVagas(
-      Math.min(
-        paginaAtual,
-        Math.max(1, Math.ceil(restantes.length / vagasPorPagina)),
-      ),
-    );
+
+    if (editando) {
+      try {
+        await apiService.excluirVaga(vaga.id);
+        const restantes = listaVagas.filter((_, i) => i !== indice);
+        setListaVagas(restantes);
+        setPaginaVagas(Math.min(paginaAtual, Math.max(1, Math.ceil(restantes.length / vagasPorPagina))));
+      } catch (err) {
+        alert("Erro ao excluir vaga no servidor.");
+      }
+    } else {
+      const restantes = listaVagas.filter((_, i) => i !== indice);
+      setListaVagas(restantes);
+      setPaginaVagas(Math.min(paginaAtual, Math.max(1, Math.ceil(restantes.length / vagasPorPagina))));
+    }
   }
 
-  function restaurarOpcoes(est) {
+  function restaurarOpcoes(est, vagas = []) {
     setFunciona24h(est?.funciona24h === true);
-    setVagasIniciais([]);
+    setListaVagas(vagas);
     setRascunhoVaga(vagaVazia);
     setErroVagas("");
     setPaginaVagas(1);
@@ -388,7 +436,7 @@ export function CadastroEstacionamento() {
     setPreviewNovaFoto(null);
   }
 
-  function adicionarVagas(event) {
+  async function adicionarVagas(event) {
     event.preventDefault();
     setErroVagas("");
     const quantidade =
@@ -398,7 +446,7 @@ export function CadastroEstacionamento() {
       setErroVagas("Informe de 1 a 100 vagas por lote.");
       return;
     }
-    if (vagasIniciais.length + (indiceEdicao === null ? quantidade : 0) > 499) {
+    if (listaVagas.length + (indiceEdicao === null ? quantidade : 0) > 499) {
       setErroVagas(
         "Você pode cadastrar até 499 vagas junto com o estacionamento. Adicione as demais nos detalhes.",
       );
@@ -422,8 +470,9 @@ export function CadastroEstacionamento() {
       preco,
       preferencial: rascunhoVaga.tipo === "IdosoPcd",
     }));
+    
     const numeros = new Set(
-      vagasIniciais
+      listaVagas
         .filter((_, indice) => indice !== indiceEdicao)
         .map((vaga) => vaga.numero.toLowerCase()),
     );
@@ -440,69 +489,61 @@ export function CadastroEstacionamento() {
       }
       numeros.add(vaga.numero.toLowerCase());
     }
-    if (indiceEdicao !== null) {
-      setVagasIniciais((atuais) =>
-        atuais.map((vaga, indice) =>
-          indice === indiceEdicao ? novas[0] : vaga,
-        ),
-      );
+
+    if (editando) {
+      setSubmitting(true);
+      try {
+        if (modoVagas === "lote") {
+          await apiService.criarVagasEmLote({
+            quantidade,
+            prefixo: rascunhoVaga.prefixo.trim(),
+            tipo: rascunhoVaga.tipo,
+            preco,
+            localizacao: rascunhoVaga.localizacao.trim(),
+            preferencial: rascunhoVaga.tipo === "IdosoPcd",
+            estacionamentoId
+          });
+        } else if (indiceEdicao !== null) {
+          const vagaId = listaVagas[indiceEdicao].id;
+          await apiService.atualizarVaga(vagaId, {
+            numero: rascunhoVaga.numero.trim(),
+            localizacao: rascunhoVaga.localizacao.trim(),
+            tipo: rascunhoVaga.tipo,
+            preco,
+            preferencial: rascunhoVaga.tipo === "IdosoPcd"
+          });
+        } else {
+          await apiService.criarVaga({
+            numero: rascunhoVaga.numero.trim(),
+            localizacao: rascunhoVaga.localizacao.trim(),
+            tipo: rascunhoVaga.tipo,
+            preco,
+            preferencial: rascunhoVaga.tipo === "IdosoPcd",
+            estacionamentoId
+          });
+        }
+        const vagasAtualizadas = await apiService.getVagasEstacionamento(estacionamentoId);
+        setListaVagas(vagasAtualizadas || []);
+        fecharModal();
+      } catch (err) {
+        setErroVagas(err.message || "Erro ao salvar vaga no servidor.");
+      } finally {
+        setSubmitting(false);
+      }
     } else {
-      setVagasIniciais((atuais) => [...atuais, ...novas]);
-      setPaginaVagas(Math.floor(vagasIniciais.length / vagasPorPagina) + 1);
+      if (indiceEdicao !== null) {
+        setListaVagas((atuais) =>
+          atuais.map((vaga, indice) =>
+            indice === indiceEdicao ? novas[0] : vaga,
+          ),
+        );
+      } else {
+        setListaVagas((atuais) => [...atuais, ...novas]);
+        setPaginaVagas(Math.floor(listaVagas.length / vagasPorPagina) + 1);
+      }
+      fecharModal();
     }
-    fecharModal();
   }
-
-  useEffect(() => {
-    let ativo = true;
-    setErrorMessage("");
-    setDadosIniciais(null);
-    if (!estacionamentoId) {
-      restaurarOpcoes(null);
-      setCarregandoDados(false);
-      return () => {
-        ativo = false;
-      };
-    }
-    setCarregandoDados(true);
-
-    Promise.all([
-      apiService.getEstacionamentoPorId(estacionamentoId),
-      apiService.getAdmins()
-    ])
-      .then(([est, adminsData]) => {
-        if (!ativo) return;
-        setDadosIniciais(est);
-        setAdmins(adminsData || []);
-        restaurarOpcoes(est);
-        
-        if (est.fotoEstacionamentoUri) {
-          setFotoAtual(est.fotoEstacionamentoUri);
-        }
-
-        if (est.endereco && typeof est.endereco === "object") {
-          setCep(est.endereco.cep || "");
-          setLogradouro(est.endereco.logradouro || "");
-          setBairro(est.endereco.bairro || "");
-          setCidade(est.endereco.cidade || est.endereco.localidade || "");
-        } else if (typeof est.endereco === "string") {
-          setLogradouro(est.endereco);
-          setCep(est.cep || "");
-          setBairro(est.bairro || "");
-          setCidade(est.cidade || "");
-        }
-      })
-      .catch((err) => {
-        if (ativo)
-          setErrorMessage(err.message || "Erro ao carregar estacionamento.");
-      })
-      .finally(() => {
-        if (ativo) setCarregandoDados(false);
-      });
-    return () => {
-      ativo = false;
-    };
-  }, [estacionamentoId]);
     
   useEffect(() => {
     const rascunho = sessionStorage.getItem("rascunhoEstacionamento");
@@ -605,7 +646,7 @@ export function CadastroEstacionamento() {
         return;
       }
 
-      if (!editando) payload.vagasIniciais = vagasIniciais;
+      if (!editando) payload.vagasIniciais = listaVagas;
 
       if (editando) {
         await apiService.atualizarEstacionamento(estacionamentoId, payload);
@@ -634,21 +675,21 @@ export function CadastroEstacionamento() {
     );
   }
 
-async function findCEP(cepBusca) {
-  const digits = cepBusca.replace(/\D/g, "");
-  if (digits.length !== 8) return;
-  try {
-    const res = await fetch(`https://viacep.com.br/ws/${digits}/json`);
-    const data = await res.json();
-    if (!data.erro) {
-      setCidade(data.localidade || "");
-      setBairro(data.bairro || "");
-      setLogradouro(data.logradouro || "");
+  async function findCEP(cepBusca) {
+    const digits = cepBusca.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json`);
+      const data = await res.json();
+      if (!data.erro) {
+        setCidade(data.localidade || "");
+        setBairro(data.bairro || "");
+        setLogradouro(data.logradouro || "");
+      }
+    } catch (err) {
+      console.warn("CEP não encontrado", err);
     }
-  } catch (err) {
-    console.warn("CEP não encontrado", err);
   }
-}
 
   return (
     <Layout title={editando ? "Editar Estacionamento" : "Cadastrar Estacionamento"}>
@@ -659,7 +700,7 @@ async function findCEP(cepBusca) {
           {editando ? "Editar Estacionamento" : "Informações do Estacionamento"}
         </h2>
         <p className="muted vallet-subtitle">
-          {editando ? "Atualize os dados e imagens do local." : "Preencha os dados e anexe uma foto."}
+          {editando ? "Atualize os dados, imagens e a estrutura de vagas do local." : "Preencha os dados e anexe uma foto."}
         </p>
 
         <form
@@ -667,7 +708,7 @@ async function findCEP(cepBusca) {
           onSubmit={handleSubmit}
           key={estacionamentoId || "novo"}
           onReset={() => {
-            restaurarOpcoes(dadosIniciais);
+            restaurarOpcoes(dadosIniciais, editando ? listaVagas : []);
             sessionStorage.removeItem("rascunhoEstacionamento");
           }}
           onChange={(e) => {
@@ -712,7 +753,6 @@ async function findCEP(cepBusca) {
                 </div>
                 <label className="vallet-field" style={{ gridColumn: "span 2" }}>
                   <span className="vallet-label">CEP</span>
-                  <label className="vallet-field" style={{ gridColumn: "span 2" }}>
                   <input
                     name="cep"
                     type="text"
@@ -726,7 +766,6 @@ async function findCEP(cepBusca) {
                       if (raw.length === 8) findCEP(raw);
                     }}
                   />
-                </label>
                 </label>
                 <label className="vallet-field" style={{ gridColumn: "span 1" }}>
                   <span className="vallet-label">UF</span>
@@ -834,157 +873,149 @@ async function findCEP(cepBusca) {
           </div>
         </div>
 
-          {!editando ? (
-            <div className="vallet-section" aria-labelledby="titulo-vagas">
-              <div className="vallet-vacancies-header">
-                <h2 id="titulo-vagas" className="vallet-vacancies-title">
-                  Vagas do estacionamento
-                  <span className="vallet-badge" aria-live="polite">
-                    {vagasIniciais.length}
-                  </span>
-                </h2>
-                <div className="vallet-actions-group">
-                  <button
-                    type="button"
-                    data-adicionar-vaga
-                    className="vallet-btn-secondary"
-                    disabled={submitting}
-                    onClick={() => abrirModal("individual")}
-                  >
-                    <IconeVaga tipo="adicionar" />
-                    Adicionar vaga
-                  </button>
-                  <button
-                    type="button"
-                    className="vallet-btn-secondary"
-                    disabled={submitting}
-                    onClick={() => abrirModal("lote")}
-                  >
-                    <IconeVaga tipo="lote" />
-                    Gerar lote
-                  </button>
-                </div>
-              </div>
-
-              <div className="vallet-table-wrapper">
-                <table className="vallet-table">
-                  <thead>
-                    <tr>
-                      <th>Identificador</th>
-                      <th>Tipo</th>
-                      <th>Setor</th>
-                      <th>Valor por hora</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vagasVisiveis.length ? (
-                      vagasVisiveis.map((vaga, indice) => (
-                        <tr key={vaga.numero}>
-                          <td>{vaga.numero}</td>
-                          <td>
-                            {vaga.tipo === "IdosoPcd" ? "Idoso / PCD" : vaga.tipo}
-                          </td>
-                          <td>{vaga.localizacao || "—"}</td>
-                          <td>
-                            {vaga.preco.toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
-                          </td>
-                          <td>
-                            <div className="vallet-row-actions">
-                              <button
-                                type="button"
-                                className="vallet-icon-btn"
-                                disabled={submitting}
-                                aria-label={`Editar vaga ${vaga.numero}`}
-                                title="Editar vaga"
-                                onClick={() => abrirModal("editar", inicioPagina + indice)}
-                              >
-                                <IconeVaga tipo="editar" />
-                              </button>
-                              <button
-                                type="button"
-                                className="vallet-icon-btn"
-                                disabled={submitting}
-                                aria-label={`Excluir vaga ${vaga.numero}`}
-                                title="Excluir vaga"
-                                onClick={() => excluirVaga(inicioPagina + indice)}
-                              >
-                                <IconeVaga tipo="excluir" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="vallet-empty-row">
-                          Nenhuma vaga cadastrada.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {vagasIniciais.length > 0 && (
-                <div className="vallet-pagination-bar">
-                  <span aria-live="polite">
-                    {inicioPagina + 1}–
-                    {Math.min(
-                      inicioPagina + vagasPorPagina,
-                      vagasIniciais.length,
-                    )}{" "}
-                    de {vagasIniciais.length} vagas
-                  </span>
-                  <nav className="vallet-pagination-nav" aria-label="Páginas de vagas">
-                    <button
-                      className="vallet-page-btn"
-                      type="button"
-                      aria-label="Página anterior"
-                      disabled={paginaAtual === 1}
-                      onClick={() => setPaginaVagas(paginaAtual - 1)}
-                    >
-                      ‹
-                    </button>
-                    {paginas.map((pagina, indice) => (
-                      <span key={pagina} style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
-                        {indice > 0 && pagina - paginas[indice - 1] > 1 && (
-                          <span>…</span>
-                        )}
-                        <button
-                          className="vallet-page-btn"
-                          type="button"
-                          aria-label={`Página ${pagina}`}
-                          aria-current={paginaAtual === pagina ? "page" : undefined}
-                          onClick={() => setPaginaVagas(pagina)}
-                        >
-                          {pagina}
-                        </button>
-                      </span>
-                    ))}
-                    <button
-                      className="vallet-page-btn"
-                      type="button"
-                      aria-label="Próxima página"
-                      disabled={paginaAtual === totalPaginas}
-                      onClick={() => setPaginaVagas(paginaAtual + 1)}
-                    >
-                      ›
-                    </button>
-                  </nav>
-                </div>
-              )}
+        <div className="vallet-section" aria-labelledby="titulo-vagas">
+          <div className="vallet-vacancies-header">
+            <h2 id="titulo-vagas" className="vallet-vacancies-title">
+              Vagas do estacionamento
+              <span className="vallet-badge" aria-live="polite">
+                {listaVagas.length}
+              </span>
+            </h2>
+            <div className="vallet-actions-group">
+              <button
+                type="button"
+                data-adicionar-vaga
+                className="vallet-btn-secondary"
+                disabled={submitting}
+                onClick={() => abrirModal("individual")}
+              >
+                <IconeVaga tipo="adicionar" />
+                Adicionar vaga
+              </button>
+              <button
+                type="button"
+                className="vallet-btn-secondary"
+                disabled={submitting}
+                onClick={() => abrirModal("lote")}
+              >
+                <IconeVaga tipo="lote" />
+                Gerar lote
+              </button>
             </div>
-          ) : (
-            <div style={{ paddingBottom: "20px", fontSize: "14px" }}>
-              <Link to={`/estacionamentos/${estacionamentoId}`} style={{ color: "var(--main-color)" }}>
-                Gerenciar vagas deste estacionamento
-              </Link>
+          </div>
+
+          <div className="vallet-table-wrapper">
+            <table className="vallet-table">
+              <thead>
+                <tr>
+                  <th>Identificador</th>
+                  <th>Tipo</th>
+                  <th>Setor</th>
+                  <th>Valor por hora</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vagasVisiveis.length ? (
+                  vagasVisiveis.map((vaga, indice) => (
+                    <tr key={vaga.numero}>
+                      <td>{vaga.numero}</td>
+                      <td>
+                        {vaga.tipo === "IdosoPcd" ? "Idoso / PCD" : vaga.tipo}
+                      </td>
+                      <td>{vaga.localizacao || "—"}</td>
+                      <td>
+                        {vaga.preco.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </td>
+                      <td>
+                        <div className="vallet-row-actions">
+                          <button
+                            type="button"
+                            className="vallet-icon-btn"
+                            disabled={submitting}
+                            aria-label={`Editar vaga ${vaga.numero}`}
+                            title="Editar vaga"
+                            onClick={() => abrirModal("editar", inicioPagina + indice)}
+                          >
+                            <IconeVaga tipo="editar" />
+                          </button>
+                          <button
+                            type="button"
+                            className="vallet-icon-btn"
+                            disabled={submitting}
+                            aria-label={`Excluir vaga ${vaga.numero}`}
+                            title="Excluir vaga"
+                            onClick={() => excluirVaga(inicioPagina + indice)}
+                          >
+                            <IconeVaga tipo="excluir" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="vallet-empty-row">
+                      Nenhuma vaga cadastrada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {listaVagas.length > 0 && (
+            <div className="vallet-pagination-bar">
+              <span aria-live="polite">
+                {inicioPagina + 1}–
+                {Math.min(
+                  inicioPagina + vagasPorPagina,
+                  listaVagas.length,
+                )}{" "}
+                de {listaVagas.length} vagas
+              </span>
+              <nav className="vallet-pagination-nav" aria-label="Páginas de vagas">
+                <button
+                  className="vallet-page-btn"
+                  type="button"
+                  aria-label="Página anterior"
+                  disabled={paginaAtual === 1}
+                  onClick={() => setPaginaVagas(paginaAtual - 1)}
+                >
+                  ‹
+                </button>
+                {paginas.map((pagina, indice) => (
+                  <span key={pagina} style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
+                    {indice > 0 && pagina - paginas[indice - 1] > 1 && (
+                      <span>…</span>
+                    )}
+                    <button
+                      className="vallet-page-btn"
+                      type="button"
+                      aria-label={`Página ${pagina}`}
+                      aria-current={paginaAtual === pagina ? "page" : undefined}
+                      onClick={() => setPaginaVagas(pagina)}
+                    >
+                      {pagina}
+                    </button>
+                  </span>
+                ))}
+                <button
+                  className="vallet-page-btn"
+                  type="button"
+                  aria-label="Próxima página"
+                  disabled={paginaAtual === totalPaginas}
+                  onClick={() => setPaginaVagas(paginaAtual + 1)}
+                >
+                  ›
+                </button>
+              </nav>
             </div>
           )}
+        </div>
 
           <footer className="vallet-form-footer">
             <Link className="vallet-cancel-link" to={editando ? `/estacionamentos/${estacionamentoId}` : "/estacionamentos"}>
