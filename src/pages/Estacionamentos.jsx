@@ -323,7 +323,7 @@ export function CadastroEstacionamento() {
     if (!estacionamentoId) {
       restaurarOpcoes(null, []);
       setCarregandoDados(false);
-      apiService.getAdmins().then(res => setAdmins(res || []));
+      apiService.getAdminsDisponiveis().then(res => setAdmins(res || []));
       return () => {
         ativo = false;
       };
@@ -332,7 +332,7 @@ export function CadastroEstacionamento() {
 
     Promise.all([
       apiService.getEstacionamentoPorId(estacionamentoId),
-      apiService.getAdmins(),
+      apiService.getAdminsDisponiveis(),
       apiService.getVagasEstacionamento(estacionamentoId).catch(() => [])
     ])
       .then(([est, adminsData, vagasData]) => {

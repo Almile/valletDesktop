@@ -182,7 +182,7 @@ export default function Gerentes() {
                       {gerente.email}
                       {gerente.telefone && <><br /><small>{gerente.telefone}</small></>}
                     </td>
-                    <td>{gerente.estacionamentoNome || gerente.estacionamentoId || "Geral"}</td>
+                    <td>{gerente.estacionamentoNome || gerente.estacionamentoId || "Não vinculado"}</td>
                     <td>
                       <span 
                         className="vallet-badge" 

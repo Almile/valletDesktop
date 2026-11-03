@@ -49,7 +49,11 @@ export const apiService = {
       throw new Error(mensagem);
     }
 
-    return response.json();
+    if (response.status === 204 || response.headers.get("content-length") === "0") {
+      return null;
+    }
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   },
 
   async login(email, senha) {
