@@ -869,8 +869,8 @@ select {
   padding: 0 16px;
   border: 1px solid var(--border-light);
   border-radius: 6px;
-  background: var(--surface);
-  color: var(--main-color);
+  background: var(--main-color);
+  color: #fff;
   font-family: "Poppins", sans-serif;
   font-size: 15px;
   font-weight: 500;
@@ -879,7 +879,7 @@ select {
 }
 
 .vallet-btn-secondary:hover {
-  background: var(--bg-main);
+  background: var(--secondary-color);
 }
 
 .vallet-btn-secondary:disabled {
@@ -1323,6 +1323,42 @@ select {
   background: var(--bg-main);
   padding: 16px;
   border-radius: 8px;
+}
+
+/* --- ZONA DE PERIGO (Ações destrutivas) --- */
+.vallet-danger-zone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff0f0;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ffcdd2;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.vallet-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 20px;
+  border: 1px solid #ffcdd2;
+  border-radius: 6px;
+  background: transparent;
+  color: #c62828;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.vallet-btn-danger:hover {
+  background: #ffebee;
+  border-color: #c62828;
 }
 
 @media (max-width: 1024px) {

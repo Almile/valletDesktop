@@ -117,7 +117,6 @@ export default function DetalhesEstacionamento() {
 
   const enderecoObj = typeof estacionamento?.endereco === "object" ? estacionamento.endereco : {};
   
-  // Encontrar o nome do Administrador a partir do ID
   const adminResp = admins.find(adm => adm.uid === estacionamento?.adminUid || adm.id === estacionamento?.adminUid);
   const adminName = adminResp ? (adminResp.nome || adminResp.email) : (estacionamento?.adminUid || "-");
 
@@ -157,9 +156,6 @@ export default function DetalhesEstacionamento() {
           </div>
 
           <div className="vallet-details-actions" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <button className="vallet-btn-clear" type="button" onClick={() => excluir_estacionamento(estacionamentoId)}>
-              Excluir estacionamento
-            </button>
             {estacionamento && (
               <Link className="vallet-btn-secondary" to={`/estacionamentos/${estacionamentoId}/editar`}>
                 <IconeVaga tipo="editar" />
@@ -358,6 +354,29 @@ export default function DetalhesEstacionamento() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* NOVA ZONA DE PERIGO ADICIONADA AO FINAL */}
+        <div className="vallet-section" style={{ marginTop: "48px", marginBottom: "8px" }}>
+          <hr className="vallet-divider" style={{ borderColor: "#ffcdd2", marginBottom: "16px" }} />
+          
+          <div className="vallet-danger-zone">
+            <div>
+              <strong style={{ display: "block", color: "#c62828", fontSize: "15px", marginBottom: "4px" }}>
+                Deseja excluir este estacionamento?
+              </strong>
+              <span style={{ color: "#c62828", fontSize: "13px", opacity: 0.9 }}>
+                Uma vez excluído, não será possível recuperar os dados, o histórico de vagas e administradores atrelados.
+              </span>
+            </div>
+            <button 
+              className="vallet-btn-danger" 
+              type="button" 
+              onClick={() => excluir_estacionamento(estacionamentoId)}
+            >
+              Excluir estacionamento
+            </button>
           </div>
         </div>
         
