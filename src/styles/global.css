@@ -281,7 +281,7 @@ select {
 }
 .sidebar nav a.active {
   background: var(--support-light);
-  color: var(--text-main);
+  color: var(--main-color);
   font-weight: 600;
 }
 .sidebar nav a:hover:not(.active),

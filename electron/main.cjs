@@ -7,6 +7,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 620,
     backgroundColor: "#F5F5F5",
+    icon: path.join(__dirname, '../src/assets/valletlogo.png'), 
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
   if (!app.isPackaged) window.loadURL("http://localhost:5173");

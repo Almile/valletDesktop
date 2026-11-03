@@ -32,7 +32,6 @@ export default function Login() {
 
     try {
       await apiService.login(email, password);
-      
       navigate("/");
     } catch (err) {
       setError(err.message || "E-mail ou senha inválidos.");
