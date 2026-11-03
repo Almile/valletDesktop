@@ -36,8 +36,10 @@ export const apiService = {
     });
 
     if (response.status === 401) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || "Sessão não autorizada.");
+      this.clearSession();
+      alert("Sua sessão expirou. Por favor, faça login novamente.");
+      window.location.href = "/login"; 
+      throw new Error("Sessão expirada.");
     }
 
     if (!response.ok) {

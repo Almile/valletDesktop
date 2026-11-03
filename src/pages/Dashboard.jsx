@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
 import { apiService } from "../services/api";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [admin, setAdmin] = useState(null);
@@ -12,6 +13,7 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function carregarDashboard() {
@@ -43,6 +45,7 @@ export default function Dashboard() {
       } catch (err) {
         console.error("Erro ao carregar dados do Dashboard:", err);
         setError("Não foi possível carregar todas as informações do painel.");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
