@@ -634,19 +634,21 @@ export function CadastroEstacionamento() {
     );
   }
 
-  async function findCEP(cepBusca) {
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${cepBusca}/json`);
-      const data = await res.json();
-      if (!data.erro) {
-        setCidade(data.localidade || "");
-        setBairro(data.bairro || "");
-        setLogradouro(data.logradouro || "");
-      }
-    } catch (err) {
-      console.warn("Cep não encontrado", err);
+async function findCEP(cepBusca) {
+  const digits = cepBusca.replace(/\D/g, "");
+  if (digits.length !== 8) return;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${digits}/json`);
+    const data = await res.json();
+    if (!data.erro) {
+      setCidade(data.localidade || "");
+      setBairro(data.bairro || "");
+      setLogradouro(data.logradouro || "");
     }
+  } catch (err) {
+    console.warn("CEP não encontrado", err);
   }
+}
 
   return (
     <Layout title={editando ? "Editar Estacionamento" : "Cadastrar Estacionamento"}>
@@ -710,7 +712,21 @@ export function CadastroEstacionamento() {
                 </div>
                 <label className="vallet-field" style={{ gridColumn: "span 2" }}>
                   <span className="vallet-label">CEP</span>
-                  <input name="cep" type="text" placeholder="11010-000" maxLength="9" required defaultValue={valorInicial("cep")} />
+                  <label className="vallet-field" style={{ gridColumn: "span 2" }}>
+                  <input
+                    name="cep"
+                    type="text"
+                    placeholder="11010-000"
+                    maxLength="9"
+                    required
+                    defaultValue={valorInicial("cep")}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "");
+                      e.target.value = formatCep(raw);
+                      if (raw.length === 8) findCEP(raw);
+                    }}
+                  />
+                </label>
                 </label>
                 <label className="vallet-field" style={{ gridColumn: "span 1" }}>
                   <span className="vallet-label">UF</span>
