@@ -101,6 +101,30 @@ export default function DetalhesGerente() {
         <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <Link 
+                to="/gerentes" 
+                title="Voltar" 
+                aria-label="Voltar" 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  justifyContent: 'center', 
+                  color: 'var(--text-main)', 
+                  textDecoration: 'none',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-light)',
+                  background: 'var(--surface)',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-main)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--surface)'}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </Link>
               <h2 className="vallet-section-title" style={{ fontSize: "24px", margin: 0 }}>
                 {gerente?.nome || "Gerente"}
               </h2>
@@ -113,16 +137,10 @@ export default function DetalhesGerente() {
                 </span>
               )}
             </div>
-            <p style={{ margin: "6px 0 0", color: "var(--secondary-color)", fontSize: "14px" }}>
-              Identificador (UID): {gerente?.uid || gerenteId}
-            </p>
           </div>
           
           <div style={{ display: "flex", gap: "8px" }}>
-            <Link className="vallet-btn-secondary" to="/gerentes">
-              Voltar
-            </Link>
-            <Link className="vallet-btn-secondary" style={{ borderColor: "var(--support-mid)", color: "var(--main-color)" }} to={`/gerentes/${gerenteId}/editar`}>
+            <Link className="vallet-btn-secondary" to={`/gerentes/${gerenteId}/editar`}>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: "6px"}}>
                 <path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
               </svg>
@@ -169,25 +187,38 @@ export default function DetalhesGerente() {
               </div>
             </div>
 
-            <footer className="vallet-form-footer" style={{ marginTop: "40px" }}>
-              {gerente.ativo !== false ? (
-                <button 
-                  className="vallet-btn-primary" 
-                  style={{ background: "#a32121" }} 
-                  onClick={() => desativar_conta(gerente.uid)}
-                >
-                  Desativar acesso do usuário
-                </button>
-              ) : (
-                <button 
-                  className="vallet-btn-primary" 
-                  style={{ background: "#057153" }} 
-                  onClick={() => reativar_conta(gerente.uid)}
-                >
-                  Reativar acesso do usuário
-                </button>
-              )}
-            </footer>
+            <div className="vallet-section" style={{ marginTop: "48px", marginBottom: "8px" }}>
+              <hr className="vallet-divider" style={{ borderColor: "#ffcdd2", marginBottom: "16px" }} />
+              
+              <div className="vallet-danger-zone">
+                <div>
+                  <strong style={{ display: "block", color: "#c62828", fontSize: "15px", marginBottom: "4px" }}>
+                    Desativar acesso do usuário
+                  </strong>
+                  <span style={{ color: "#c62828", fontSize: "13px", opacity: 0.9 }}>
+                    O usuário perderá o acesso ao sistema, mas seus dados e histórico serão mantidos. Estacionamento vinculado: {gerente.estacionamentoNome || "Nenhum"}.
+                  </span>
+                </div>
+                {gerente.ativo !== false ? (
+                  <button 
+                    className="vallet-btn-danger" 
+                    type="button" 
+                    onClick={() => desativar_conta(gerente.uid)}
+                  >
+                    Desativar usuário
+                  </button>
+                ) : (
+                  <button 
+                    className="vallet-btn-primary" 
+                    style={{ background: "#057153" }} 
+                    type="button"
+                    onClick={() => reativar_conta(gerente.uid)}
+                  >
+                    Reativar usuário
+                  </button>
+                )}
+              </div>
+            </div>
           </>
         )}
       </div>
