@@ -79,10 +79,11 @@ select {
 }
 .brand img {
   display: block;
-  width: 150px;
-  height: 54px;
+  width: 200px;
+  height: 100px;
   object-fit: contain;
   border-radius: 8px;
+  filter: brightness(0) invert(1);
 }
 .brand--large img {
   width: 210px;
@@ -262,6 +263,7 @@ select {
 .main-navigation {
   display: grid;
   gap: 7px;
+  margin: auto 0;
 }
 .sidebar nav a,
 .logout-button {

@@ -10,9 +10,18 @@ export default function Gerentes() {
   const [error, setError] = useState(null);
   const [termoBusca, setTermoBusca] = useState("");
 
+  // Estados para Paginação
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const itensPorPagina = 10;
+
   useEffect(() => {
     carregarGerentes();
   }, []);
+
+  // Voltar para a primeira página sempre que o termo de busca mudar
+  useEffect(() => {
+    setPaginaAtual(1);
+  }, [termoBusca]);
 
   async function carregarGerentes() {
     try {
@@ -30,6 +39,15 @@ export default function Gerentes() {
     g.nome?.toLowerCase().includes(termoBusca.toLowerCase()) ||
     g.email?.toLowerCase().includes(termoBusca.toLowerCase())
   );
+
+  // Cálculos de Paginação
+  const totalPaginas = Math.max(1, Math.ceil(gerentesFiltrados.length / itensPorPagina));
+  const indiceInicial = (paginaAtual - 1) * itensPorPagina;
+  const gerentesPaginados = gerentesFiltrados.slice(indiceInicial, indiceInicial + itensPorPagina);
+
+  const paginas = [
+    ...new Set([1, paginaAtual - 1, paginaAtual, paginaAtual + 1, totalPaginas]),
+  ].filter((p) => p >= 1 && p <= totalPaginas).sort((a, b) => a - b);
 
   return (
     <Layout title="Gerentes">
@@ -171,7 +189,7 @@ export default function Gerentes() {
                   </td>
                 </tr>
               ) : (
-                gerentesFiltrados.map((gerente) => (
+                gerentesPaginados.map((gerente) => (
                   <tr key={gerente.uid || gerente.email}>
                     <td>
                       <strong>{gerente.nome || "Não informado"}</strong>
@@ -205,6 +223,47 @@ export default function Gerentes() {
             </tbody>
           </table>
         </div>
+
+        {/* Bloco de Paginação Visual */}
+        {gerentesFiltrados.length > 0 && (
+          <div className="vallet-pagination-bar" style={{ padding: "16px 24px" }}>
+            <span aria-live="polite">
+              {indiceInicial + 1}–{Math.min(indiceInicial + itensPorPagina, gerentesFiltrados.length)} de {gerentesFiltrados.length} gerentes
+            </span>
+            <nav className="vallet-pagination-nav" aria-label="Navegação de páginas">
+              <button
+                className="vallet-page-btn"
+                type="button"
+                disabled={paginaAtual === 1}
+                onClick={() => setPaginaAtual(paginaAtual - 1)}
+              >
+                ‹
+              </button>
+              {paginas.map((pagina, indice) => (
+                <span key={pagina} style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
+                  {indice > 0 && pagina - paginas[indice - 1] > 1 && <span>…</span>}
+                  <button
+                    className="vallet-page-btn"
+                    type="button"
+                    aria-current={paginaAtual === pagina ? "page" : undefined}
+                    onClick={() => setPaginaAtual(pagina)}
+                  >
+                    {pagina}
+                  </button>
+                </span>
+              ))}
+              <button
+                className="vallet-page-btn"
+                type="button"
+                disabled={paginaAtual === totalPaginas}
+                onClick={() => setPaginaAtual(paginaAtual + 1)}
+              >
+                ›
+              </button>
+            </nav>
+          </div>
+        )}
+
       </section>
     </Layout>
   );

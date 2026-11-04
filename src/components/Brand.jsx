@@ -1,4 +1,4 @@
-import valletLogo from "../assets/valletlogo.png";
+import valletLogo from "../assets/vallet_logo.png";
 
 export default function Brand({ large = false }) {
   return (

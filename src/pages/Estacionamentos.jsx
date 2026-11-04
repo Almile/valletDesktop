@@ -35,10 +35,19 @@ export default function Estacionamentos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [termoBusca, setTermoBusca] = useState("");
+  
+  // Estados para Paginação
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const itensPorPagina = 10;
 
   useEffect(() => {
     carregarEstacionamentos();
   }, []);
+
+  // Voltar para a primeira página sempre que o termo de busca mudar
+  useEffect(() => {
+    setPaginaAtual(1);
+  }, [termoBusca]);
 
   async function carregarEstacionamentos() {
     try {
@@ -55,6 +64,15 @@ export default function Estacionamentos() {
   const estacionamentosFiltrados = estacionamentos.filter((est) =>
     est.nome?.toLowerCase().includes(termoBusca.toLowerCase())
   );
+
+  // Cálculos de Paginação
+  const totalPaginas = Math.max(1, Math.ceil(estacionamentosFiltrados.length / itensPorPagina));
+  const indiceInicial = (paginaAtual - 1) * itensPorPagina;
+  const estacionamentosPaginados = estacionamentosFiltrados.slice(indiceInicial, indiceInicial + itensPorPagina);
+
+  const paginas = [
+    ...new Set([1, paginaAtual - 1, paginaAtual, paginaAtual + 1, totalPaginas]),
+  ].filter((p) => p >= 1 && p <= totalPaginas).sort((a, b) => a - b);
 
   return (
     <Layout title="Estacionamentos">
@@ -210,7 +228,7 @@ export default function Estacionamentos() {
                   </td>
                 </tr>
               ) : (
-              estacionamentosFiltrados.map((est) => (
+              estacionamentosPaginados.map((est) => (
                 <tr key={est.id || est.cnpj}>
                   <td>
                     <strong>{est.nome}</strong>
@@ -252,6 +270,47 @@ export default function Estacionamentos() {
             </tbody>
           </table>
         </div>
+
+        {/* Bloco de Paginação Visual */}
+        {estacionamentosFiltrados.length > 0 && (
+          <div className="vallet-pagination-bar" style={{ padding: "16px 24px" }}>
+            <span aria-live="polite">
+              {indiceInicial + 1}–{Math.min(indiceInicial + itensPorPagina, estacionamentosFiltrados.length)} de {estacionamentosFiltrados.length} estacionamentos
+            </span>
+            <nav className="vallet-pagination-nav" aria-label="Navegação de páginas">
+              <button
+                className="vallet-page-btn"
+                type="button"
+                disabled={paginaAtual === 1}
+                onClick={() => setPaginaAtual(paginaAtual - 1)}
+              >
+                ‹
+              </button>
+              {paginas.map((pagina, indice) => (
+                <span key={pagina} style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
+                  {indice > 0 && pagina - paginas[indice - 1] > 1 && <span>…</span>}
+                  <button
+                    className="vallet-page-btn"
+                    type="button"
+                    aria-current={paginaAtual === pagina ? "page" : undefined}
+                    onClick={() => setPaginaAtual(pagina)}
+                  >
+                    {pagina}
+                  </button>
+                </span>
+              ))}
+              <button
+                className="vallet-page-btn"
+                type="button"
+                disabled={paginaAtual === totalPaginas}
+                onClick={() => setPaginaAtual(paginaAtual + 1)}
+              >
+                ›
+              </button>
+            </nav>
+          </div>
+        )}
+
       </section>
     </Layout>
   );
