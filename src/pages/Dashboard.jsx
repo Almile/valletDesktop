@@ -28,14 +28,8 @@ export default function Dashboard() {
 
         setAdmin(perfil);
 
-        let totalVagas = 0;
-        if (Array.isArray(listaEstacionamentos) && listaEstacionamentos.length > 0) {
-          const promessasVagas = listaEstacionamentos.map((est) =>
-            apiService.getVagasEstacionamento(est.id).catch(() => [])
-          );
-          const resultadosVagas = await Promise.all(promessasVagas);
-          totalVagas = resultadosVagas.reduce((acc, vagas) => acc + (vagas?.length || 0), 0);
-        }
+        const totalVagas = (Array.isArray(listaEstacionamentos) ? listaEstacionamentos : [])
+          .reduce((acc, est) => acc + (Number(est?.quantidadeVagasTotal) || 0), 0);
 
         setStats({
           estacionamentos: listaEstacionamentos?.length || 0,
