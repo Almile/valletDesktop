@@ -369,6 +369,9 @@ export function CadastroEstacionamento() {
   const [submitting, setSubmitting] = useState(false);
   const [funciona24h, setFunciona24h] = useState(false);
   const [admins, setAdmins] = useState([]);
+  const [adminSelecionado, setAdminSelecionado] = useState("");
+  const [erroAdmins, setErroAdmins] = useState("");
+  const [restauracaoFormulario, setRestauracaoFormulario] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [fotoAtual, setFotoAtual] = useState(null);
@@ -379,10 +382,22 @@ export function CadastroEstacionamento() {
     let ativo = true;
     setErrorMessage("");
     setDadosIniciais(null);
+    setAdmins([]);
+    setErroAdmins("");
+    async function carregarAdminsDisponiveis() {
+      try {
+        const lista = await apiService.getAdminsDisponiveis();
+        if (!Array.isArray(lista)) throw new Error("Lista de administradores inválida.");
+        return lista;
+      } catch (err) {
+        if (ativo) setErroAdmins(err.message || "Não foi possível carregar os administradores disponíveis.");
+        return [];
+      }
+    }
     if (!estacionamentoId) {
       restaurarOpcoes(null, []);
       setCarregandoDados(false);
-      apiService.getAdminsDisponiveis().then(res => setAdmins(res || []));
+      carregarAdminsDisponiveis().then(res => { if (ativo) setAdmins(res); });
       return () => {
         ativo = false;
       };
@@ -391,13 +406,35 @@ export function CadastroEstacionamento() {
 
     Promise.all([
       apiService.getEstacionamentoPorId(estacionamentoId),
-      apiService.getAdminsDisponiveis(),
+      carregarAdminsDisponiveis(),
       apiService.getVagasEstacionamento(estacionamentoId).catch(() => [])
     ])
-      .then(([est, adminsData, vagasData]) => {
+      .then(async ([est, adminsData, vagasData]) => {
+        let listaAdmins = adminsData || [];
+        if (est.adminUid) {
+          try {
+            // Identidade vem do UID vinculado, não do e-mail em cache no estacionamento.
+            const administrador = await apiService.getGerentePorId(est.adminUid);
+            if (!administrador || typeof administrador !== "object" || Array.isArray(administrador)
+                || (!administrador.nome && !administrador.email)
+                || (administrador.uid && administrador.uid !== est.adminUid)) {
+              throw new Error("A consulta não retornou o administrador vinculado.");
+            }
+            listaAdmins = [
+              ...listaAdmins.filter((adm) => (adm.uid || adm.id) !== est.adminUid),
+              { ...administrador, uid: est.adminUid },
+            ];
+          } catch (err) {
+            // Não substituir o responsável por outro disponível se a consulta falhar.
+            listaAdmins = listaAdmins.filter((adm) => (adm.uid || adm.id) !== est.adminUid);
+            if (ativo) setErroAdmins((anterior) => [anterior,
+              "Não foi possível confirmar o nome do administrador vinculado. " + (err.message || "Falha na consulta.")
+            ].filter(Boolean).join(" "));
+          }
+        }
         if (!ativo) return;
         setDadosIniciais(est);
-        setAdmins(adminsData || []);
+        setAdmins(listaAdmins);
         restaurarOpcoes(est, vagasData || []);
         
         if (est.fotoEstacionamentoUri) {
@@ -485,6 +522,7 @@ export function CadastroEstacionamento() {
   }
 
   function restaurarOpcoes(est, vagas = []) {
+    setAdminSelecionado(est?.adminUid || "");
     setFunciona24h(est?.funciona24h === true);
     setListaVagas(vagas);
     setRascunhoVaga(vagaVazia);
@@ -609,6 +647,7 @@ export function CadastroEstacionamento() {
     if (rascunho && !editando) {
       const data = JSON.parse(rascunho);
       Object.entries(data).forEach(([name, value]) => {
+        if (name === "adminUid") return;
         const input = document.querySelector(`[name="${name}"]`);
         if (input) {
           if (input.type === "checkbox" || input.type === "radio") {
@@ -618,6 +657,7 @@ export function CadastroEstacionamento() {
           }
         }
       });
+      setAdminSelecionado(String(data.adminUid || ""));
       if (data.cep) setCep(data.cep);
       if (data.logradouro) setLogradouro(data.logradouro);
       if (data.bairro) setBairro(data.bairro);
@@ -661,6 +701,11 @@ export function CadastroEstacionamento() {
     if (submitting) return;
     if (modalVagas) return;
     setErrorMessage("");
+    if (!adminSelecionado || (!admins.some((adm) => (adm.uid || adm.id) === adminSelecionado)
+        && adminSelecionado !== dadosIniciais?.adminUid)) {
+      setErrorMessage("Selecione um administrador disponível ou mantenha o administrador atual.");
+      return;
+    }
     setSubmitting(true);
 
     const formData = new FormData(event.target);
@@ -680,7 +725,7 @@ export function CadastroEstacionamento() {
         nome: (data.nome || "").trim(),
         cnpj: (data.cnpj || "").trim(),
         telefone: (data.telefone || "").trim(),
-        adminUid: data.adminUid,
+        adminUid: adminSelecionado,
 
         endereco: {
           cep: (data.cep || "").trim(),
@@ -765,8 +810,10 @@ export function CadastroEstacionamento() {
         <form
           ref={formularioRef}
           onSubmit={handleSubmit}
-          key={estacionamentoId || "novo"}
-          onReset={() => {
+          key={`${estacionamentoId || "novo"}:${restauracaoFormulario}`}
+          onReset={(event) => {
+            event.preventDefault();
+            setRestauracaoFormulario((valor) => valor + 1);
             restaurarOpcoes(dadosIniciais, editando ? listaVagas : []);
             sessionStorage.removeItem("rascunhoEstacionamento");
           }}
@@ -802,13 +849,21 @@ export function CadastroEstacionamento() {
                   <span className="vallet-label">Administrador responsável</span>
                   <div className="vallet-admin-wrapper">
                     <Link className="vallet-add-admin-btn" to="/estacionamentos/novo/gerente">+</Link>
-                    <select name="adminUid" required defaultValue={dadosIniciais?.adminUid || ""}>
+                    <select name="adminUid" aria-label="Administrador responsável" required value={adminSelecionado} onChange={(event) => setAdminSelecionado(event.target.value)} disabled={submitting}>
+                      {dadosIniciais?.adminUid && !admins.some((adm) => (adm.uid || adm.id) === dadosIniciais.adminUid) && (
+                        <option value={dadosIniciais.adminUid}>
+                          {"Administrador atual (cadastro indisponível)"}
+                        </option>
+                      )}
                       <option value="" disabled>Selecione...</option>
                       {admins.map((adm) => (
-                        <option key={adm.uid || adm.id} value={adm.uid || adm.id}>{adm.nome || adm.email}</option>
+                        <option key={adm.uid || adm.id} value={adm.uid || adm.id}>{adm.nome && adm.email ? `${adm.nome} (${adm.email})` : adm.nome || adm.email}</option>
                       ))}
                     </select>
                   </div>
+                  {erroAdmins && <small role="alert" style={{ color: "var(--secondary-color, #637365)" }}>
+                    {erroAdmins} {editando && dadosIniciais?.adminUid ? "O administrador atual foi mantido." : "Não foi possível carregar as opções para seleção."}
+                  </small>}
                 </div>
                 <label className="vallet-field" style={{ gridColumn: "span 2" }}>
                   <span className="vallet-label">CEP</span>

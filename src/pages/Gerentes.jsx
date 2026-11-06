@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import { apiService } from "../services/api";
@@ -274,6 +274,11 @@ export function CadastroGerente() {
   const { gerenteId } = useParams();
   const editando = Boolean(gerenteId);
   const [dadosIniciais, setDadosIniciais] = useState(null);
+  const [gerenteCarregadoId, setGerenteCarregadoId] = useState(null);
+  const [vinculoSelecionado, setVinculoSelecionado] = useState("");
+  const [erroEstacionamentos, setErroEstacionamentos] = useState("");
+  const [tentativaCarga, setTentativaCarga] = useState(0);
+  const envioEmAndamento = useRef(false);
   const [carregandoDados, setCarregandoDados] = useState(editando);
 
   const [estacionamentos, setEstacionamentos] = useState([]);
@@ -283,76 +288,136 @@ export function CadastroGerente() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
 
+  function mensagemErro(erro, padrao) {
+    const detalhe = erro?.response?.data?.detail ?? erro?.detail;
+    if (Array.isArray(detalhe)) {
+      return detalhe.map((item) => item.msg || "Campo inválido").join("; ");
+    }
+    if (typeof detalhe === "string" && detalhe) return detalhe;
+    return typeof erro?.message === "string" && erro.message ? erro.message : padrao;
+  }
+
+  function normalizarCampo(campo, valor) {
+    const texto = String(valor ?? "").trim();
+    if (campo === "telefone") return texto.replace(/\D/g, "");
+    if (campo === "email") return texto.toLowerCase();
+    return texto;
+  }
+
   useEffect(() => {
+    let ativo = true;
     async function carregarEstacionamentos() {
+      setErroEstacionamentos("");
       try {
         const lista = await apiService.getEstacionamentos();
-        setEstacionamentos(lista || []);
+        if (!Array.isArray(lista)) throw new Error("A API não retornou uma lista válida de estacionamentos.");
+        if (ativo) setEstacionamentos(lista);
       } catch (err) {
-        console.warn("Não foi possível carregar os estacionamentos:", err);
+        if (ativo) setErroEstacionamentos(mensagemErro(err, "Não foi possível carregar os estacionamentos."));
       }
     }
     carregarEstacionamentos();
-  }, []);
+    return () => { ativo = false; };
+  }, [tentativaCarga]);
 
   useEffect(() => {
-    if (!editando) return;
-    
     let ativo = true;
+    setDadosIniciais(null);
+    setGerenteCarregadoId(null);
+    setErrorMessage("");
+    setVinculoSelecionado("");
+    setCarregandoDados(editando);
+    if (!editando) return () => { ativo = false; };
+
     async function carregarGerente() {
       try {
         const dados = await apiService.getGerentePorId(gerenteId);
-        if (ativo) setDadosIniciais(dados);
+        if (!dados || typeof dados !== "object" || Array.isArray(dados) || typeof dados.nome !== "string" || typeof dados.email !== "string") {
+          throw new Error("A API não retornou dados válidos do gerente.");
+        }
+        if (ativo) {
+          setDadosIniciais(dados);
+          setVinculoSelecionado(dados.estacionamentoId || "");
+          setGerenteCarregadoId(gerenteId);
+        }
       } catch (err) {
-        if (ativo) setErrorMessage("Erro ao carregar dados do gerente.");
+        if (ativo) setErrorMessage(mensagemErro(err, "Erro ao carregar dados do gerente."));
       } finally {
         if (ativo) setCarregandoDados(false);
       }
     }
     carregarGerente();
     return () => { ativo = false; };
-  }, [gerenteId, editando]);
+  }, [gerenteId, editando, tentativaCarga]);
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (envioEmAndamento.current) return;
     setErrorMessage("");
-
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
-
-    if (data.senha && data.senha !== data.confirmacaoSenha) {
-      setErrorMessage("As senhas informadas não coincidem.");
+    if (editando && (!dadosIniciais || gerenteCarregadoId !== gerenteId)) {
+      setErrorMessage("Os dados do gerente não foram carregados. Recarregue antes de editar.");
       return;
     }
 
-    setSubmitting(true);
-
-    const payload = {
-      nome: data.nome,
-      email: data.email,
-      telefone: data.telefone,
-      estacionamentoId: data.estacionamentoId || "",
+    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+    if ((data.senha || data.confirmacaoSenha) && data.senha !== data.confirmacaoSenha) {
+      setErrorMessage("As senhas informadas não coincidem.");
+      return;
+    }
+    if (data.senha && data.senha.length < 6) {
+      setErrorMessage("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    const valores = {
+      nome: String(data.nome || "").trim(),
+      email: String(data.email || "").trim(),
+      telefone: String(data.telefone || "").trim(),
+      estacionamentoId: vinculoSelecionado,
     };
-
-    // Apenas enviar senha se ela foi preenchida
-    if (data.senha) {
-      payload.senha = data.senha;
+    if (!valores.nome || !valores.email) {
+      setErrorMessage("Nome e e-mail são obrigatórios.");
+      return;
     }
 
-    // Se estiver criando novo
+    // PATCH envia apenas alterações reais, preservando campos não editados.
+    const camposAlterados = editando ? Object.keys(valores).filter((campo) =>
+      normalizarCampo(campo, valores[campo]) !== normalizarCampo(campo, dadosIniciais[campo])
+    ) : Object.keys(valores);
+    const payload = Object.fromEntries(camposAlterados.map((campo) => [campo, valores[campo]]));
+    if (data.senha) payload.senha = data.senha;
+    if (editando && camposAlterados.length === 0 && !data.senha) {
+      setErrorMessage("Nenhuma alteração foi feita nos dados do gerente.");
+      return;
+    }
     if (!editando) {
       payload.tipo_user = "admin";
       payload.cargo = "Gerente";
       if (!payload.senha) {
         setErrorMessage("A senha provisória é obrigatória para novos cadastros.");
-        setSubmitting(false);
         return;
       }
     }
 
+    envioEmAndamento.current = true;
+    setSubmitting(true);
+    let confirmando = false;
     try {
       if (editando) {
         await apiService.atualizarGerente(gerenteId, payload);
+        confirmando = true;
+        const salvo = await apiService.getGerentePorId(gerenteId);
+        if (!salvo || typeof salvo !== "object" || Array.isArray(salvo)) {
+          throw new Error("A API retornou dados inválidos na conferência.");
+        }
+        const divergentes = camposAlterados.filter((campo) =>
+          normalizarCampo(campo, salvo[campo]) !== normalizarCampo(campo, valores[campo])
+        );
+        if (divergentes.length) {
+          const rotulos = { nome: "nome", email: "e-mail", telefone: "telefone", estacionamentoId: "vínculo com o estacionamento" };
+          setErrorMessage(`A API respondeu à edição, mas não confirmou a gravação de: ${divergentes.map((campo) => rotulos[campo]).join(", ")}. Alguns dados podem ter sido salvos. Confira os detalhes antes de tentar novamente.`);
+          return;
+        }
+        // Senhas não são devolvidas pela API: seu resultado depende do contrato da rota.
         alert("Gerente atualizado com sucesso!");
         navigate(`/gerentes/${gerenteId}`);
       } else {
@@ -361,16 +426,26 @@ export function CadastroGerente() {
         navigate("/gerentes");
       }
     } catch (err) {
-      setErrorMessage(err.message || "Erro ao salvar gerente.");
+      const detalhe = mensagemErro(err, "Falha na comunicação com a API.");
+      setErrorMessage(confirmando
+        ? `A solicitação de edição foi enviada, mas não foi possível confirmar os dados salvos. ${detalhe} Confira os detalhes antes de tentar novamente.`
+        : `${editando ? "Não foi possível concluir a edição do gerente." : "Não foi possível cadastrar o gerente."} ${detalhe}`);
     } finally {
+      envioEmAndamento.current = false;
       setSubmitting(false);
     }
   }
 
-  if (carregandoDados) {
+  if (editando && (carregandoDados || !dadosIniciais || gerenteCarregadoId !== gerenteId)) {
     return (
       <Layout title="Editar gerente">
-        <p style={{ padding: "20px" }}>Carregando dados do gerente...</p>
+        {carregandoDados || !errorMessage ? <p style={{ padding: "20px" }}>Carregando dados do gerente...</p> : (
+          <div style={{ padding: "20px" }}>
+            <p role="alert">{errorMessage}</p>
+            <button type="button" className="vallet-btn-primary" onClick={() => setTentativaCarga((atual) => atual + 1)}>Tentar novamente</button>
+            <Link className="vallet-cancel-link" to="/gerentes">Voltar para gerentes</Link>
+          </div>
+        )}
       </Layout>
     );
   }
@@ -384,7 +459,16 @@ export function CadastroGerente() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        {erroEstacionamentos && <div role="alert" style={{ marginBottom: "16px", color: "var(--secondary-color, #637365)" }}>
+          Não foi possível carregar as opções de estacionamento. {erroEstacionamentos} O vínculo atual será preservado.
+        </div>}
+        <form key={gerenteId || "novo"} onSubmit={handleSubmit} onReset={() => {
+          setVinculoSelecionado(dadosIniciais?.estacionamentoId || "");
+          setErrorMessage("");
+          setMostrarSenha(false);
+          setMostrarConfirmacao(false);
+        }}>
+          <fieldset disabled={submitting} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
           
           <div className="vallet-section">
             <h2 className="vallet-section-title">Informações pessoais</h2>
@@ -443,7 +527,10 @@ export function CadastroGerente() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
               <label className="vallet-field" style={{ gridColumn: "1 / -1" }}>
                 <span className="vallet-label">Vincular a um estacionamento (Opcional)</span>
-                <select name="estacionamentoId" defaultValue={dadosIniciais?.estacionamentoId || ""}>
+                <select name="estacionamentoId" value={vinculoSelecionado} onChange={(event) => setVinculoSelecionado(event.target.value)} disabled={Boolean(erroEstacionamentos)}>
+                  {vinculoSelecionado && !estacionamentos.some((est) => est.id === vinculoSelecionado) && (
+                    <option value={vinculoSelecionado}>{dadosIniciais?.estacionamentoNome || "Estacionamento vinculado atualmente"}</option>
+                  )}
                   <option value="">Acesso geral (sem vínculo específico)</option>
                   {estacionamentos.map((est) => (
                     <option key={est.id} value={est.id}>
@@ -548,6 +635,7 @@ export function CadastroGerente() {
               {submitting ? "Salvando..." : editando ? "Salvar alterações" : "Cadastrar gerente"}
             </button>
           </footer>
+          </fieldset>
         </form>
       </div>
     </Layout>
