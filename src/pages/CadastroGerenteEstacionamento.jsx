@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 import { applyMask, formatPhone } from "../utils/inputMasks";
 
 export function CadastroGerenteEstacionamento() {
   const navigate = useNavigate();
+  const { notify } = useFeedback();
   const [estacionamentos, setEstacionamentos] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -47,7 +49,7 @@ export function CadastroGerenteEstacionamento() {
 
     try {
       await apiService.criarGerente(payload);
-      alert("Gerente cadastrado com sucesso!");
+      notify("Gerente cadastrado com sucesso!");
       navigate("/estacionamentos/novo");
     } catch (err) {
       setErrorMessage(err.message || "Erro ao cadastrar gerente.");

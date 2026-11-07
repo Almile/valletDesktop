@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
+import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 import { applyMask, formatPhone } from "../utils/inputMasks";
 
@@ -271,6 +272,7 @@ export default function Gerentes() {
 
 export function CadastroGerente() {
   const navigate = useNavigate();
+  const { notify } = useFeedback();
   const { gerenteId } = useParams();
   const editando = Boolean(gerenteId);
   const [dadosIniciais, setDadosIniciais] = useState(null);
@@ -418,11 +420,11 @@ export function CadastroGerente() {
           return;
         }
         // Senhas não são devolvidas pela API: seu resultado depende do contrato da rota.
-        alert("Gerente atualizado com sucesso!");
+        notify("Gerente atualizado com sucesso!");
         navigate(`/gerentes/${gerenteId}`);
       } else {
         await apiService.criarGerente(payload);
-        alert("Gerente cadastrado com sucesso!");
+        notify("Gerente cadastrado com sucesso!");
         navigate("/gerentes");
       }
     } catch (err) {
@@ -439,7 +441,7 @@ export function CadastroGerente() {
   if (editando && (carregandoDados || !dadosIniciais || gerenteCarregadoId !== gerenteId)) {
     return (
       <Layout title="Editar gerente">
-        {carregandoDados || !errorMessage ? <p style={{ padding: "20px" }}>Carregando dados do gerente...</p> : (
+        {carregandoDados || !errorMessage ? <p className="vallet-loading-text" role="status">Carregando dados do gerente...</p> : (
           <div style={{ padding: "20px" }}>
             <p role="alert">{errorMessage}</p>
             <button type="button" className="vallet-btn-primary" onClick={() => setTentativaCarga((atual) => atual + 1)}>Tentar novamente</button>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
+import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 import { applyMask, formatCep, formatCnpj, formatPhone } from "../utils/inputMasks";
 
@@ -318,6 +319,7 @@ export default function Estacionamentos() {
 
 export function CadastroEstacionamento() {
   const navigate = useNavigate();
+  const { notify, confirm } = useFeedback();
   const { estacionamentoId } = useParams();
   const editando = Boolean(estacionamentoId);
   const [dadosIniciais, setDadosIniciais] = useState(null);
@@ -503,7 +505,13 @@ export function CadastroEstacionamento() {
 
   async function excluirVaga(indice) {
     const vaga = listaVagas[indice];
-    if (!window.confirm(`Excluir a vaga ${vaga.numero}?`)) return;
+    const confirmado = await confirm({
+      titulo: "Excluir vaga",
+      mensagem: `Excluir a vaga ${vaga.numero}?`,
+      textoConfirmar: "Excluir",
+      perigo: true,
+    });
+    if (!confirmado) return;
 
     if (editando) {
       try {
@@ -512,7 +520,7 @@ export function CadastroEstacionamento() {
         setListaVagas(restantes);
         setPaginaVagas(Math.min(paginaAtual, Math.max(1, Math.ceil(restantes.length / vagasPorPagina))));
       } catch (err) {
-        alert("Erro ao excluir vaga no servidor.");
+        notify("Erro ao excluir vaga no servidor.", "error");
       }
     } else {
       const restantes = listaVagas.filter((_, i) => i !== indice);
@@ -759,7 +767,7 @@ export function CadastroEstacionamento() {
       }
       
       sessionStorage.removeItem("rascunhoEstacionamento");
-      alert(editando ? "Estacionamento atualizado com sucesso!" : "Estacionamento cadastrado com sucesso!");
+      notify(editando ? "Estacionamento atualizado com sucesso!" : "Estacionamento cadastrado com sucesso!");
       navigate(editando ? `/estacionamentos/${estacionamentoId}` : "/estacionamentos");
     } catch (err) {
       setErrorMessage(err.message || "Erro ao salvar os dados.");
@@ -771,9 +779,15 @@ export function CadastroEstacionamento() {
   if (carregandoDados || (editando && !dadosIniciais)) {
     return (
       <Layout title="Editar estacionamento">
-        <p role={errorMessage ? "alert" : "status"} className="vallet-error-banner">
-          {errorMessage || "Carregando estacionamento..."}
-        </p>
+        {errorMessage ? (
+          <div role="alert" className="vallet-error-banner">
+            {errorMessage}
+          </div>
+        ) : (
+          <p role="status" className="vallet-loading-text">
+            Carregando estacionamento...
+          </p>
+        )}
         <Link className="vallet-link-back" to="/estacionamentos">Voltar para estacionamentos</Link>
       </Layout>
     );

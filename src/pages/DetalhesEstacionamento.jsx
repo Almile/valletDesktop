@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 
 function IconeVaga({ tipo }) {
@@ -41,6 +42,7 @@ const infoBoxStyle = {
 export default function DetalhesEstacionamento() {
   const { estacionamentoId } = useParams();
   const navigate = useNavigate();
+  const { notify, confirm } = useFeedback();
   const [estacionamento, setEstacionamento] = useState(null);
   const [vagas, setVagas] = useState([]);
   const [admins, setAdmins] = useState([]);
@@ -85,14 +87,20 @@ export default function DetalhesEstacionamento() {
   }, [availability, category, search, vagas]);
 
   async function excluir_estacionamento(estacionamentoId) {
-    if (!window.confirm("Deseja realmente excluir este estacionamento? Esta ação não pode ser desfeita.")) return;
+    const confirmado = await confirm({
+      titulo: "Excluir estacionamento",
+      mensagem: "Deseja realmente excluir este estacionamento? Esta ação não pode ser desfeita.",
+      textoConfirmar: "Excluir",
+      perigo: true,
+    });
+    if (!confirmado) return;
     try {
       await apiService.excluirEstacionamento(estacionamentoId);
-      alert("Estacionamento excluído com sucesso!");
+      notify("Estacionamento excluído com sucesso!");
       navigate("/estacionamentos");
     } catch (err) {
       console.warn(err);
-      alert("Erro ao excluir estacionamento.");
+      notify("Erro ao excluir estacionamento.", "error");
     }
   }
 
@@ -101,7 +109,7 @@ export default function DetalhesEstacionamento() {
       await apiService.atualizarVaga(vaga.id, { disponivel: !vaga.disponivel });
       setVagas((prev) => prev.map((v) => v.id === vaga.id ? { ...v, disponivel: !v.disponivel } : v));
     } catch (err) {
-      alert("Erro ao alterar o status da vaga.");
+      notify("Erro ao alterar o status da vaga.", "error");
     }
   }
 
@@ -109,7 +117,9 @@ export default function DetalhesEstacionamento() {
     return (
       <Layout title="Dados do estacionamento">
         <div className="vallet-form-container">
-          <p>Carregando dados do estacionamento...</p>
+          <p className="vallet-loading-text" role="status">
+            Carregando dados do estacionamento...
+          </p>
         </div>
       </Layout>
     );

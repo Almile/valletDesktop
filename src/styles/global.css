@@ -1279,6 +1279,11 @@ select {
   border-radius: 6px;
   margin-bottom: 16px;
 }
+.vallet-loading-text {
+  color: var(--secondary-color);
+  padding: 12px;
+  margin-bottom: 16px;
+}
 .vallet-info-text {
   font-size: 13px;
   margin-top: 4px;
@@ -1363,10 +1368,104 @@ select {
   border-color: #c62828;
 }
 
+/* --- Feedback em tela (toasts e confirmação) ---
+   Substitui alert()/confirm() nativos, que no Electron do Windows podem
+   bloquear a digitação nos campos após o fechamento do diálogo. */
+.vallet-toast-region {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(360px, calc(100vw - 48px));
+  pointer-events: none;
+}
+
+.vallet-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  box-shadow: 0 12px 30px rgba(23, 36, 28, 0.16);
+  pointer-events: auto;
+  animation: vallet-toast-in 0.2s ease-out;
+}
+
+.vallet-toast--success { border-left: 4px solid #057153; }
+.vallet-toast--error { border-left: 4px solid #c62828; }
+.vallet-toast--info { border-left: 4px solid var(--main-color); }
+
+.vallet-toast span { flex: 1; }
+
+.vallet-toast-close {
+  border: none;
+  background: transparent;
+  color: var(--secondary-color);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.vallet-toast-close:hover { color: var(--text-main); }
+
+@keyframes vallet-toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.vallet-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(23, 36, 28, 0.45);
+}
+
+.vallet-confirm-dialog {
+  width: min(440px, 100%);
+  padding: 24px;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgba(23, 36, 28, 0.28);
+}
+
+.vallet-confirm-dialog h2 {
+  margin: 0 0 12px;
+  font-size: 19px;
+  color: var(--text-main);
+}
+
+.vallet-confirm-dialog p {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--secondary-color);
+}
+
+.vallet-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 @media (max-width: 1024px) {
   .vallet-layout-split { grid-template-columns: 1fr; }
   .vallet-row-4 { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 768px) {
   .vallet-row-4 { grid-template-columns: 1fr; }
+  .vallet-toast-region { top: 12px; right: 12px; width: calc(100vw - 24px); }
 }

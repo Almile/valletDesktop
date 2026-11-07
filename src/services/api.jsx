@@ -1,12 +1,40 @@
 const API_URL = "http://localhost:8000";
 
+const SESSION_EXPIRED_EVENT = "vallet:session-expired";
+const SESSION_STARTED_EVENT = "vallet:session-started";
+
+// Evita que várias requisições concorrentes (ex.: Promise.all) disparem
+// um aviso de sessão expirada cada uma. É reativado a cada novo login.
+let sessaoExpiradaNotificada = false;
+
+function notificarSessaoExpirada() {
+  if (sessaoExpiradaNotificada) return;
+  sessaoExpiradaNotificada = true;
+
+  window.dispatchEvent(
+    new CustomEvent(SESSION_EXPIRED_EVENT, {
+      detail: {
+        message: "Sua sessão expirou. Por favor, faça login novamente.",
+      },
+    }),
+  );
+
+  // HashRouter: troca a rota sem recarregar a página (o que remontaria a
+  // aplicação e poderia duplicar os avisos).
+  window.location.hash = "#/login";
+}
+
 export const apiService = {
   getToken() {
     return localStorage.getItem("idToken");
   },
 
   setSession(data) {
-    if (data.idToken) localStorage.setItem("idToken", data.idToken);
+    if (data.idToken) {
+      sessaoExpiradaNotificada = false;
+      window.dispatchEvent(new CustomEvent(SESSION_STARTED_EVENT));
+      localStorage.setItem("idToken", data.idToken);
+    }
     if (data.refreshToken)
       localStorage.setItem("refreshToken", data.refreshToken);
     if (data.localId) localStorage.setItem("localId", data.localId);
@@ -18,7 +46,12 @@ export const apiService = {
     localStorage.removeItem("localId");
   },
 
-  async request(endpoint, options = {}, customToken = null) {
+  async request(
+    endpoint,
+    options = {},
+    customToken = null,
+    { notificarExpiracao = true } = {},
+  ) {
     const token = customToken || this.getToken();
 
     const headers = {
@@ -37,9 +70,10 @@ export const apiService = {
 
     if (response.status === 401) {
       this.clearSession();
-      alert("Sua sessão expirou. Por favor, faça login novamente.");
-      window.location.href = "/login"; 
-      throw new Error("Sessão expirada.");
+      if (token) {
+        if (notificarExpiracao) notificarSessaoExpirada();
+        throw new Error("Sessão expirada.");
+      }
     }
 
     if (!response.ok) {
@@ -91,7 +125,10 @@ export const apiService = {
 
   async logout() {
     try {
-      await this.request("/auth/logout", { method: "POST" });
+      // Logout manual: não exibir "sessão expirada" se o token já venceu.
+      await this.request("/auth/logout", { method: "POST" }, null, {
+        notificarExpiracao: false,
+      });
     } catch (err) {
       console.warn("Erro ao deslogar no backend:", err);
     } finally {

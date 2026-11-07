@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
+import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 
 function formatarData(valor) {
@@ -39,6 +40,7 @@ function InfoBlock({ label, value }) {
 
 export default function DetalhesGerente() {
   const { gerenteId } = useParams();
+  const { notify, confirm } = useFeedback();
   const [gerente, setGerente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -64,32 +66,38 @@ export default function DetalhesGerente() {
   }, [gerenteId]);
 
   async function desativar_conta(uid) {
-    if(!window.confirm("Tem certeza que deseja desativar este usuário?")) return;
+    const confirmado = await confirm({
+      titulo: "Desativar usuário",
+      mensagem: "Tem certeza que deseja desativar este usuário?",
+      textoConfirmar: "Desativar",
+      perigo: true,
+    });
+    if (!confirmado) return;
     try {
         await apiService.desativarGerente(uid);
-        alert("Usuário desativado com sucesso!");
+        notify("Usuário desativado com sucesso!");
         setGerente(prev => ({ ...prev, ativo: false }));
       } catch (err) {
         console.warn(err);
-        alert("Erro ao desativar usuário.");
+        notify("Erro ao desativar usuário.", "error");
       } 
   }
 
   async function reativar_conta(uid) {
     try {
         await apiService.reativarGerente(uid);
-        alert("Usuário reativado com sucesso!");
+        notify("Usuário reativado com sucesso!");
         setGerente(prev => ({ ...prev, ativo: true }));
       } catch (err) {
         console.warn(err);
-        alert("Erro ao reativar usuário.");
+        notify("Erro ao reativar usuário.", "error");
       } 
   }
 
   if (loading) {
     return (
       <Layout title="Detalhes do gerente">
-        <p style={{ padding: "20px" }}>Carregando dados do gerente...</p>
+        <p className="vallet-loading-text" role="status">Carregando dados do gerente...</p>
       </Layout>
     );
   }
