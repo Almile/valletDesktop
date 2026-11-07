@@ -355,7 +355,7 @@ export function CadastroEstacionamento() {
   const [paginaVagas, setPaginaVagas] = useState(1);
   const dialogRef = useRef(null);
   const acionadorModal = useRef(null);
-  const [setCep] = useState("");
+  const [cep, setCep] = useState("");
   const [bairro, setBairro] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [cidade, setCidade] = useState("");
