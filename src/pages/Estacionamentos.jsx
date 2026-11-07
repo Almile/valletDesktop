@@ -7,6 +7,29 @@ import { applyMask, formatCep, formatCnpj, formatPhone } from "../utils/inputMas
 
 const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
+function categoriaVaga(vaga = {}) {
+  const tipo = String(vaga.tipo ?? "").trim().toLowerCase().replace(/[\s_/-]/g, "");
+  if (vaga.preferencial === true || ["preferencial", "idosopcd", "pcd", "idoso"].includes(tipo)) return "preferencial";
+  if (tipo === "moto") return "moto";
+  if (["carro", "comum"].includes(tipo)) return "carro";
+  return "";
+}
+
+function rotuloVaga(vaga) {
+  const categoria = categoriaVaga(vaga);
+  return ({ carro: "Carro", moto: "Moto", preferencial: "Preferencial" })[categoria] || vaga.tipo || "Tipo não informado";
+}
+
+function dadosTipoVaga(categoria, vagaAnterior) {
+  if (categoria === "preferencial") {
+    // Preserva o veículo de uma vaga preferencial antiga ao editar outros dados.
+    const tipoAnterior = String(vagaAnterior?.tipo ?? "").trim().toLowerCase();
+    return { tipo: tipoAnterior === "moto" ? "moto" : "carro", preferencial: true };
+  }
+  if (["carro", "moto"].includes(categoria)) return { tipo: categoria, preferencial: false };
+  throw new Error("Selecione Carro, Moto ou Preferencial.");
+}
+
 function IconeVaga({ tipo }) {
   const caminhos = {
     editar: <path d="m16 3 5 5M4 16 16 4a2.1 2.1 0 0 1 3 3L7 19l-4 1z" />,
@@ -332,7 +355,7 @@ export function CadastroEstacionamento() {
   const [paginaVagas, setPaginaVagas] = useState(1);
   const dialogRef = useRef(null);
   const acionadorModal = useRef(null);
-  const [cep, setCep] = useState("");
+  const [setCep] = useState("");
   const [bairro, setBairro] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [cidade, setCidade] = useState("");
@@ -363,7 +386,7 @@ export function CadastroEstacionamento() {
     numero: "",
     prefixo: "A-",
     quantidade: 10,
-    tipo: "Comum",
+    tipo: "carro",
     preco: "0",
     localizacao: "",
   };
@@ -496,6 +519,7 @@ export function CadastroEstacionamento() {
         : {
             ...vagaVazia,
             ...listaVagas[indice],
+            tipo: categoriaVaga(listaVagas[indice]),
             preco: String(listaVagas[indice].preco),
           },
     );
@@ -544,6 +568,14 @@ export function CadastroEstacionamento() {
   async function adicionarVagas(event) {
     event.preventDefault();
     setErroVagas("");
+    if (submitting) return;
+    let tipoEscolhido;
+    try {
+      tipoEscolhido = dadosTipoVaga(rascunhoVaga.tipo, indiceEdicao === null ? null : listaVagas[indiceEdicao]);
+    } catch (err) {
+      setErroVagas(err.message);
+      return;
+    }
     const quantidade =
       modoVagas === "lote" ? Number(rascunhoVaga.quantidade) : 1;
     const preco = Number(rascunhoVaga.preco);
@@ -571,9 +603,8 @@ export function CadastroEstacionamento() {
           ? `${rascunhoVaga.prefixo.trim()}${indice + 1}`
           : rascunhoVaga.numero.trim(),
       localizacao: rascunhoVaga.localizacao.trim(),
-      tipo: rascunhoVaga.tipo,
+      ...tipoEscolhido,
       preco,
-      preferencial: rascunhoVaga.tipo === "IdosoPcd",
     }));
     
     const numeros = new Set(
@@ -602,10 +633,9 @@ export function CadastroEstacionamento() {
           await apiService.criarVagasEmLote({
             quantidade,
             prefixo: rascunhoVaga.prefixo.trim(),
-            tipo: rascunhoVaga.tipo,
+            ...tipoEscolhido,
             preco,
             localizacao: rascunhoVaga.localizacao.trim(),
-            preferencial: rascunhoVaga.tipo === "IdosoPcd",
             estacionamentoId
           });
         } else if (indiceEdicao !== null) {
@@ -613,22 +643,32 @@ export function CadastroEstacionamento() {
           await apiService.atualizarVaga(vagaId, {
             numero: rascunhoVaga.numero.trim(),
             localizacao: rascunhoVaga.localizacao.trim(),
-            tipo: rascunhoVaga.tipo,
+            ...tipoEscolhido,
             preco,
-            preferencial: rascunhoVaga.tipo === "IdosoPcd"
           });
         } else {
           await apiService.criarVaga({
             numero: rascunhoVaga.numero.trim(),
             localizacao: rascunhoVaga.localizacao.trim(),
-            tipo: rascunhoVaga.tipo,
+            ...tipoEscolhido,
             preco,
-            preferencial: rascunhoVaga.tipo === "IdosoPcd",
             estacionamentoId
           });
         }
         const vagasAtualizadas = await apiService.getVagasEstacionamento(estacionamentoId);
         setListaVagas(vagasAtualizadas || []);
+        const divergentes = novas.filter((esperada) => {
+          const salva = (vagasAtualizadas || []).find((vaga) =>
+            indiceEdicao !== null ? vaga.id === listaVagas[indiceEdicao].id : vaga.numero === esperada.numero
+          );
+          if (!salva) return true;
+          const tipoSalvo = String(salva.tipo ?? "").trim().toLowerCase();
+          const tipoCompativel = tipoSalvo === "comum" ? "carro" : tipoSalvo;
+          return tipoCompativel !== tipoEscolhido.tipo || (categoriaVaga(salva) === "preferencial") !== tipoEscolhido.preferencial;
+        });
+        if (divergentes.length) {
+          throw new Error("A API respondeu à gravação, mas a consulta não confirmou o tipo de todas as vagas. Confira a lista antes de tentar novamente para evitar duplicatas.");
+        }
         fecharModal();
       } catch (err) {
         setErroVagas(err.message || "Erro ao salvar vaga no servidor.");
@@ -758,7 +798,9 @@ export function CadastroEstacionamento() {
         return;
       }
 
-      if (!editando) payload.vagasIniciais = listaVagas;
+      if (!editando) payload.vagasIniciais = listaVagas.map((vaga) => ({
+        ...vaga, ...dadosTipoVaga(categoriaVaga(vaga), vaga),
+      }));
 
       if (editando) {
         await apiService.atualizarEstacionamento(estacionamentoId, payload);
@@ -1049,7 +1091,7 @@ export function CadastroEstacionamento() {
                     <tr key={vaga.numero}>
                       <td>{vaga.numero}</td>
                       <td>
-                        {vaga.tipo === "IdosoPcd" ? "Idoso / PCD" : vaga.tipo}
+                        {rotuloVaga(vaga)}
                       </td>
                       <td>{vaga.localizacao || "—"}</td>
                       <td>
@@ -1263,9 +1305,10 @@ export function CadastroEstacionamento() {
                       })
                     }
                   >
-                    <option value="Comum">Comum</option>
-                    <option value="IdosoPcd">Idoso / PCD</option>
-                    <option value="Moto">Moto</option>
+                    <option value="" disabled>Selecione o tipo</option>
+                    <option value="carro">Carro</option>
+                    <option value="moto">Moto</option>
+                    <option value="preferencial">Preferencial</option>
                   </select>
                 </label>
                 

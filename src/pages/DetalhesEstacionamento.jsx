@@ -4,6 +4,19 @@ import Layout from "../components/Layout";
 import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 
+function categoriaVaga(vaga = {}) {
+  const tipo = String(vaga.tipo ?? "").trim().toLowerCase().replace(/[\s_/-]/g, "");
+  if (vaga.preferencial === true || ["preferencial", "idosopcd", "pcd", "idoso"].includes(tipo)) return "preferencial";
+  if (tipo === "moto") return "moto";
+  if (["carro", "comum"].includes(tipo)) return "carro";
+  return "";
+}
+
+function rotuloVaga(vaga) {
+  const categoria = categoriaVaga(vaga);
+  return ({ carro: "Carro", moto: "Moto", preferencial: "Preferencial" })[categoria] || vaga.tipo || "Tipo não informado";
+}
+
 function IconeVaga({ tipo }) {
   const caminhos = {
     editar: <path d="m16 3 5 5M4 16 16 4a2.1 2.1 0 0 1 3 3L7 19l-4 1z" />,
@@ -79,7 +92,7 @@ export default function DetalhesEstacionamento() {
     const normalizedSearch = search.trim().toLowerCase();
     return vagas.filter((vaga) => {
       const matchesSearch = !normalizedSearch || (vaga.numero && vaga.numero.toLowerCase().includes(normalizedSearch)) || (vaga.localizacao && vaga.localizacao.toLowerCase().includes(normalizedSearch));
-      const matchesCategory = category === "todas" || vaga.tipo === category;
+      const matchesCategory = category === "todas" || categoriaVaga(vaga) === category;
       const isDisponivel = vaga.disponivel ? "Livre" : "Ocupada";
       const matchesAvailability = availability === "todas" || isDisponivel === availability;
       return matchesSearch && matchesCategory && matchesAvailability;
@@ -296,8 +309,8 @@ export default function DetalhesEstacionamento() {
               <div className="vallet-card-value">{vagas.filter((v) => v.disponivel).length}</div>
             </div>
             <div className="vallet-card-resumo">
-              <div className="vallet-label vallet-card-label">PCD / Preferenciais</div>
-              <div className="vallet-card-value">{vagas.filter((v) => v.tipo === "IdosoPcd" || v.preferencial).length}</div>
+              <div className="vallet-label vallet-card-label">Preferenciais</div>
+              <div className="vallet-card-value">{vagas.filter((v) => categoriaVaga(v) === "preferencial").length}</div>
             </div>
             <div className="vallet-card-resumo">
               <div className="vallet-label vallet-card-label">Ocupadas</div>
@@ -314,9 +327,9 @@ export default function DetalhesEstacionamento() {
               <span className="vallet-label">Categoria</span>
               <select value={category} onChange={(e) => setCategory(e.target.value)}>
                 <option value="todas">Todas</option>
-                <option value="Comum">Comum</option>
-                <option value="IdosoPcd">Idoso / PCD</option>
-                <option value="Moto">Moto</option>
+                <option value="carro">Carro</option>
+                <option value="moto">Moto</option>
+                <option value="preferencial">Preferencial</option>
               </select>
             </label>
             <label className="vallet-field">
@@ -347,9 +360,9 @@ export default function DetalhesEstacionamento() {
                     <tr key={vacancy.id}>
                       <td><strong>{vacancy.numero}</strong></td>
                       <td>{vacancy.localizacao || "Padrão"}</td>
-                      <td>{vacancy.tipo === "IdosoPcd" ? "Idoso / PCD" : vacancy.tipo}</td>
+                      <td>{rotuloVaga(vacancy)}</td>
                       <td>R$ {parseFloat(vacancy.preco || 0).toFixed(2)}</td>
-                      <td>{vacancy.preferencial ? "Sim" : "Não"}</td>
+                      <td>{categoriaVaga(vacancy) === "preferencial" ? "Sim" : "Não"}</td>
                       <td>
                         <button type="button" className="vallet-status-btn" onClick={() => toggleDisponibilidade(vacancy)} title="Clique para alterar status">
                           <span className={`vallet-badge ${vacancy.disponivel ? 'vallet-badge-livre' : 'vallet-badge-ocupada'}`}>
