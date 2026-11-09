@@ -123,6 +123,10 @@ export const apiService = {
     return this.request("/auth/me", { method: "GET" }, customToken);
   },
 
+  async getChatToken() {
+    return this.request("/chat/token", { method: "POST" });
+  },
+
   async logout() {
     try {
       // Logout manual: não exibir "sessão expirada" se o token já venceu.

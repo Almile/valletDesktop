@@ -5,6 +5,7 @@ import DetalhesEstacionamento from "./pages/DetalhesEstacionamento";
 import Estacionamentos from "./pages/Estacionamentos";
 import Gerentes from "./pages/Gerentes";
 import DetalhesGerente from "./pages/DetalhesGerente";
+import Chat from "./pages/Chat";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import { CadastroGerenteEstacionamento } from "./pages/CadastroGerenteEstacionamento";
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/estacionamentos" element={<Estacionamentos />} />
         <Route path="/gerentes" element={<Gerentes />} />
+        <Route path="/chat" element={<Chat />} />
         
         <Route path="/gerentes/:gerenteId" element={<DetalhesGerente />} />
         <Route path="/estacionamentos/:estacionamentoId" element={<DetalhesEstacionamento />} />

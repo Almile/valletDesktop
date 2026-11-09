@@ -1,6 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import Brand from "./Brand";
+import ChatNavBadge from "./ChatNavBadge";
 import { apiService } from "../services/api";
+import { desconectarChat } from "../services/chat";
 
 export default function Layout({ title, children }) {
   const navigate = useNavigate();
@@ -11,6 +13,7 @@ export default function Layout({ title, children }) {
     } catch (error) {
       console.error("Erro ao realizar logout:", error);
     } finally {
+      await desconectarChat();
       navigate("/login");
     }
   }
@@ -29,6 +32,11 @@ export default function Layout({ title, children }) {
           </NavLink>
           <NavLink to="/gerentes">
             ♙ <span>Gerentes</span>
+          </NavLink>
+          <NavLink to="/chat">
+            🗨️
+            <span>Chat</span>
+            <ChatNavBadge />
           </NavLink>
         </nav>
 
