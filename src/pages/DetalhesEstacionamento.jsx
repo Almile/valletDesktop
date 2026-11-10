@@ -4,6 +4,8 @@ import Layout from "../components/Layout";
 import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 
+import "../styles/estacionamentos.css";
+
 function categoriaVaga(vaga = {}) {
   const tipo = String(vaga.tipo ?? "").trim().toLowerCase().replace(/[\s_/-]/g, "");
   if (vaga.preferencial === true || ["preferencial", "idosopcd", "pcd", "idoso"].includes(tipo)) return "preferencial";

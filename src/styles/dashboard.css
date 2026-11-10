@@ -1,0 +1,229 @@
+.welcome-card {
+  display: flex;
+  min-height: 190px;
+  padding: 34px 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  border-radius: 18px;
+  color: #fff;
+  background: #3B5042;
+  box-shadow: 0 18px 45px rgba(59, 80, 66, 0.12);
+}
+.welcome-card h2 {
+  margin: 0;
+}
+.welcome-card p:last-child {
+  color: rgba(255, 255, 255, 0.76);
+}
+.light-button,
+.secondary-button {
+  display: inline-flex;
+  min-height: 46px;
+  padding: 0 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 500;
+}
+.light-button {
+  color: var(--main-color);
+  background: #fff;
+}
+.secondary-button {
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+}
+.statistics-grid {
+  display: grid;
+  margin: 26px 0;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.statistics-grid article {
+  display: flex;
+  padding: 24px;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+/* Alterando a cor de fundo do ícone */
+.statistics-grid i {
+  display: block; /* Mudei para block para funcionar com a máscara SVG */
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background-color: #3B5042; /* A cor verde escura que você pediu */
+}
+
+.statistics-grid article div {
+  display: grid;
+}
+.statistics-grid small {
+  color: var(--secondary-color);
+}
+.statistics-grid strong {
+  font-size: 26px;
+}
+
+/* --- NOVOS ESTILOS PARA OS CADASTROS RECENTES --- */
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.recent-card {
+  padding: 24px;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 12px;
+}
+
+.recent-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+.see-all-link {
+  color: var(--main-color);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.see-all-link:hover {
+  text-decoration: underline;
+}
+
+.recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-main);
+  border-radius: 8px;
+}
+
+.recent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recent-info strong {
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.recent-info small {
+  font-size: 13px;
+  color: var(--secondary-color);
+}
+
+.recent-action {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--main-color);
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid var(--support-light);
+  border-radius: 6px;
+  background: var(--surface);
+  transition: all 0.2s;
+}
+
+.recent-action:hover {
+  background: var(--main-color);
+  color: #fff;
+}
+
+.recent-empty {
+  color: var(--secondary-color);
+  font-size: 14px;
+  text-align: center;
+  margin: auto;
+  padding: 24px 0;
+}
+
+@media (max-width: 1024px) {
+    .recent-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.management-grid article {
+  min-height: 220px;
+  padding: 28px;
+}
+.management-grid h2 {
+  margin: 3px 0 9px;
+}
+.management-grid p {
+  min-height: 54px;
+  color: var(--secondary-color);
+  line-height: 1.55;
+}
+.empty-state {
+  display: grid;
+  min-height: 430px;
+  padding: 45px;
+  place-items: center;
+  align-content: center;
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  background: var(--surface);
+  text-align: center;
+}
+.empty-state > span {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border-radius: 18px;
+  color: var(--main-color);
+  background: var(--support-light);
+  font-size: 25px;
+}
+.empty-state h2 {
+  margin: 22px 0 8px;
+}
+.empty-state p {
+  margin: 0 0 25px;
+  color: var(--secondary-color);
+}
+.empty-state .primary-button {
+  width: auto;
+  min-width: 190px;
+}

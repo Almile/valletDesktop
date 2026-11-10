@@ -1,11 +1,5 @@
 import { getApps, initializeApp } from "firebase/app";
-import {
-  getAuth,
-  initializeAuth,
-  inMemoryPersistence,
-  signInWithCustomToken,
-  signOut,
-} from "firebase/auth";
+import { getAuth, initializeAuth, inMemoryPersistence, signInWithCustomToken, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 import { apiService } from "./api";

@@ -5,6 +5,8 @@ import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 import { applyMask, formatCep, formatCnpj, formatPhone } from "../utils/inputMasks";
 
+import "../styles/estacionamentos.css";
+
 const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
 function categoriaVaga(vaga = {}) {
@@ -749,15 +751,24 @@ export function CadastroEstacionamento() {
     if (submitting) return;
     if (modalVagas) return;
     setErrorMessage("");
+
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData.entries());
+
+    // Validação correta do CNPJ logo após capturar os dados do formulário
+    const cnpjLimpo = (data.cnpj || "").replace(/\D/g, "");
+    if (cnpjLimpo.length !== 14) {
+      setErrorMessage("O CNPJ deve conter 14 dígitos válidos.");
+      setSubmitting(false);
+      return;
+    }
+
     if (!adminSelecionado || (!admins.some((adm) => (adm.uid || adm.id) === adminSelecionado)
         && adminSelecionado !== dadosIniciais?.adminUid)) {
       setErrorMessage("Selecione um administrador disponível ou mantenha o administrador atual.");
       return;
     }
     setSubmitting(true);
-
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
     
     let fotoFinalUri = fotoAtual;
 

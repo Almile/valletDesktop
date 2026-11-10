@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Brand from "../components/Brand";
 import { apiService } from "../services/api";
 
+import "../styles/login.css";
+
 function EyeIcon({ passwordVisible }) {
   return passwordVisible ? (
     <svg viewBox="0 0 24 24" aria-hidden="true">

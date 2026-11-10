@@ -3,6 +3,7 @@ import Layout from "../components/Layout";
 import { apiService } from "../services/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../styles/dashboard.css";
 
 export default function Dashboard() {
   const [admin, setAdmin] = useState(null);
@@ -11,6 +12,10 @@ export default function Dashboard() {
     gerentes: 0,
     vagas: 0,
   });
+  
+  const [recentesEstacionamentos, setRecentesEstacionamentos] = useState([]);
+  const [recentesGerentes, setRecentesGerentes] = useState([]);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -19,23 +24,50 @@ export default function Dashboard() {
     async function carregarDashboard() {
       try {
         setLoading(true);
-
         const [perfil, listaEstacionamentos, listaGerentes] = await Promise.all([
           apiService.getPerfil(),
           apiService.getEstacionamentos().catch(() => []),
           apiService.getGerentes().catch(() => []),
         ]);
-
+        
         setAdmin(perfil);
+        
+        const ests = Array.isArray(listaEstacionamentos) ? listaEstacionamentos : [];
+        const gers = Array.isArray(listaGerentes) ? listaGerentes : [];
 
-        const totalVagas = (Array.isArray(listaEstacionamentos) ? listaEstacionamentos : [])
-          .reduce((acc, est) => acc + (Number(est?.quantidadeVagasTotal) || 0), 0);
+        const totalVagas = ests.reduce((acc, est) => acc + (Number(est?.quantidadeVagasTotal) || 0), 0);
 
         setStats({
-          estacionamentos: listaEstacionamentos?.length || 0,
-          gerentes: listaGerentes?.length || 0,
+          estacionamentos: ests.length,
+          gerentes: gers.length,
           vagas: totalVagas,
         });
+
+        const obterTempo = (item) => {
+          const campoData = item.data_criacao || item.criadoEm || item.createdAt || item.dataCriacao;
+          if (!campoData) return 0;
+          if (typeof campoData.toMillis === "function") return campoData.toMillis();
+          if (typeof campoData.toDate === "function") return campoData.toDate().getTime();
+          if (typeof campoData === "object" && typeof campoData.seconds === "number") {
+            return campoData.seconds * 1000;
+          }
+          const t = new Date(campoData).getTime();
+          return Number.isNaN(t) ? 0 : t;
+        };
+
+        // Estacionamentos com ordenação robusta (Data + ID do Firebase)
+        const estsOrdenados = [...ests].sort((a, b) => {
+          const tempoA = obterTempo(a);
+          const tempoB = obterTempo(b);
+          if (tempoA !== tempoB) return tempoB - tempoA;
+          return String(b.id || "").localeCompare(String(a.id || ""));
+        });
+        setRecentesEstacionamentos(estsOrdenados.slice(0, 3));
+
+        // Gerentes ordenados por data
+        const gerentesOrdenados = [...gers].sort((a, b) => obterTempo(b) - obterTempo(a));
+        setRecentesGerentes(gerentesOrdenados.slice(0, 3));
+
       } catch (err) {
         console.error("Erro ao carregar dados do Dashboard:", err);
         setError("Não foi possível carregar todas as informações do painel.");
@@ -44,9 +76,8 @@ export default function Dashboard() {
         setLoading(false);
       }
     }
-
     carregarDashboard();
-  }, []);
+  }, [navigate]);
 
   return (
     <Layout title="Visão geral">
@@ -77,21 +108,21 @@ export default function Dashboard() {
 
       <section className="statistics-grid">
         <article>
-          <i>▣</i>
+          <i style={{ WebkitMask: "url('/src/assets/parking.png') center / contain no-repeat", mask: "url('/src/assets/parking.png') center / contain no-repeat" }}></i>
           <div>
             <small>Estacionamentos</small>
             <strong>{loading ? "..." : stats.estacionamentos}</strong>
           </div>
         </article>
         <article>
-          <i>♙</i>
+          <i style={{ WebkitMask: "url('/src/assets/person.png') center / contain no-repeat", mask: "url('/src/assets/person.png') center / contain no-repeat" }}></i>
           <div>
             <small>Gerentes</small>
             <strong>{loading ? "..." : stats.gerentes}</strong>
           </div>
         </article>
         <article>
-          <i>P</i>
+          <i style={{ WebkitMask: "url('/src/assets/spot.png') center / contain no-repeat", mask: "url('/src/assets/spot.png') center / contain no-repeat" }}></i>
           <div>
             <small>Total de vagas</small>
             <strong>{loading ? "..." : stats.vagas}</strong>
@@ -99,30 +130,54 @@ export default function Dashboard() {
         </article>
       </section>
 
-      <section className="management-grid">
-        <article>
-          <i>▣</i>
-          <div>
-            <h2>Estacionamentos</h2>
-            <p>Cadastre unidades, horários, valores e a quantidade de vagas.</p>
-            <Link className="secondary-button" to="/estacionamentos">
-              Gerenciar estacionamentos
-            </Link>
-          </div>
-        </article>
-        <article>
-          <i>♙</i>
-          <div>
-            <h2>Gerentes</h2>
-            <p>
-              Adicione gerentes e vincule cada profissional ao seu
-              estacionamento.
-            </p>
-            <Link className="secondary-button" to="/gerentes">
-              Gerenciar equipe
-            </Link>
-          </div>
-        </article>
+      <section className="recent-grid">
+        <div className="recent-card">
+          <header className="recent-header">
+            <h2>Estacionamentos Recentes</h2>
+            <Link to="/estacionamentos" className="see-all-link">Ver todos</Link>
+          </header>
+          {loading ? (
+             <p className="recent-empty">Carregando...</p>
+          ) : recentesEstacionamentos.length > 0 ? (
+            <ul className="recent-list">
+              {recentesEstacionamentos.map(est => (
+                <li key={est.id || est.cnpj} className="recent-item">
+                  <div className="recent-info">
+                    <strong>{est.nome}</strong>
+                    <small>{est.cnpj}</small>
+                  </div>
+                  <Link to={`/estacionamentos/${est.id}`} className="recent-action">Detalhes</Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="recent-empty">Nenhum estacionamento cadastrado.</p>
+          )}
+        </div>
+
+        <div className="recent-card">
+           <header className="recent-header">
+            <h2>Gerentes Recentes</h2>
+            <Link to="/gerentes" className="see-all-link">Ver todos</Link>
+          </header>
+          {loading ? (
+             <p className="recent-empty">Carregando...</p>
+          ) : recentesGerentes.length > 0 ? (
+            <ul className="recent-list">
+              {recentesGerentes.map(ger => (
+                <li key={ger.uid || ger.email} className="recent-item">
+                  <div className="recent-info">
+                    <strong>{ger.nome || "Sem nome"}</strong>
+                    <small>{ger.email}</small>
+                  </div>
+                  <Link to={`/gerentes/${ger.uid}`} className="recent-action">Detalhes</Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="recent-empty">Nenhum gerente cadastrado.</p>
+          )}
+        </div>
       </section>
     </Layout>
   );

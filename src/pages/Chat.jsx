@@ -1,20 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  collection,
-  doc,
-  limitToLast,
-  onSnapshot,
-  orderBy,
-  query,
-  runTransaction,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { collection, doc, limitToLast, onSnapshot, orderBy, query,runTransaction, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 
 import Layout from "../components/Layout";
 import { apiService } from "../services/api";
 import { conectarChat } from "../services/chat";
+
+import "../styles/chat.css";
 
 function iniciais(nome) {
   const partes = String(nome || "")
@@ -125,9 +116,8 @@ function Mensagem({ mensagem, uid }) {
 
   return (
     <article
-      className={`chat-message${propria ? " chat-message--own" : ""}${
-        pendente ? " chat-message--pending" : ""
-      }`}
+      className={`chat-message${propria ? " chat-message--own" : ""}${pendente ? " chat-message--pending" : ""
+        }`}
     >
       <span className="chat-message-avatar" aria-hidden="true">
         {iniciais(mensagem.autorNome || (propria ? "Administrador" : "Gestor"))}
@@ -214,7 +204,7 @@ export default function Chat() {
           if (ativo) {
             setAvisoGerentes(
               falha.message ||
-                "Não foi possível carregar os gerentes para iniciar novas conversas.",
+              "Não foi possível carregar os gerentes para iniciar novas conversas.",
             );
           }
         }
@@ -537,8 +527,8 @@ export default function Chat() {
                   <div className="chat-panel-avatar" aria-hidden="true">
                     {iniciais(
                       conversaSelecionada?.gestorNome ||
-                        conversaSelecionada?.estacionamentoNome ||
-                        "Estacionamento",
+                      conversaSelecionada?.estacionamentoNome ||
+                      "Estacionamento",
                     )}
                   </div>
                   <div>

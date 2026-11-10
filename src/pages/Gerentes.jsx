@@ -5,6 +5,8 @@ import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 import { applyMask, formatPhone } from "../utils/inputMasks";
 
+import "../styles/gerentes.css";
+
 export default function Gerentes() {
   const [gerentes, setGerentes] = useState([]);
   const [loading, setLoading] = useState(true);

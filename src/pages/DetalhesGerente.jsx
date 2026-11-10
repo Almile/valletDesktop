@@ -4,6 +4,8 @@ import Layout from "../components/Layout";
 import { useFeedback } from "../components/Feedback";
 import { apiService } from "../services/api";
 
+import "../styles/gerentes.css";
+
 function formatarData(valor) {
   if (!valor) return "-";
   const data = new Date(valor);
