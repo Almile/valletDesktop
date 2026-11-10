@@ -480,7 +480,16 @@ export default function Chat() {
                   title="Abrir conversa"
                   aria-label="Abrir conversa"
                 >
-                  🗨️
+                  <span 
+                  style={{ 
+                      width: "22px", 
+                      height: "22px", 
+                      backgroundColor: "currentColor", 
+                      WebkitMask: "url('/src/assets/chat.png') center / contain no-repeat",
+                      mask: "url('/src/assets/chat.png') center / contain no-repeat",
+                      display: "inline-block"
+                  }}
+              ></span>
                 </button>
               </div>
               {avisoGerentes && (
