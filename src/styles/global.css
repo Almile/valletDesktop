@@ -9,6 +9,7 @@
   --border-light: #e0e5e1;
   --support-light: #e6f7f1;
   --support-mid: #97a697;
+  --primary: var(--main-color);
 }
 
 [data-theme="dark"] {
