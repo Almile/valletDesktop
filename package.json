@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "start": "npm run dev",
-    "build": "vite build",
+    "build": "electron-builder",
     "preview": "vite preview",
     "test": "npm run build && node --check electron/main.cjs"
   },
@@ -20,6 +20,14 @@
     "win": {
       "icon": "build/icon.ico",
       "target": "nsis"
+    },
+    "mac": {
+      "icon": "build/icon.ico",
+      "target": ["dmg"]
+    },
+    "linux": {
+      "icon": "build/icon.ico",
+      "target": ["AppImage"]
     },
     "files": [
       "dist/**/*",
