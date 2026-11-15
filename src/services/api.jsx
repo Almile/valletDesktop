@@ -1,4 +1,5 @@
 const API_URL = "http://localhost:8000";
+const REQUEST_TIMEOUT_MS = 20000;
 
 const SESSION_EXPIRED_EVENT = "vallet:session-expired";
 const SESSION_STARTED_EVENT = "vallet:session-started";
@@ -63,10 +64,28 @@ export const apiService = {
       headers["Authorization"] = `Bearer ${token.trim()}`;
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    let response;
+    try {
+      response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers,
+        signal: options.signal || controller.signal,
+      });
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw new Error(
+          "O servidor demorou para responder. Verifique a conexão e tente novamente.",
+        );
+      }
+      throw new Error(
+        err.message || "Não foi possível conectar ao servidor.",
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (response.status === 401) {
       this.clearSession();

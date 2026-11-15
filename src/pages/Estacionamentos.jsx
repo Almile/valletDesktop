@@ -400,6 +400,7 @@ export function CadastroEstacionamento() {
   const [erroAdmins, setErroAdmins] = useState("");
   const [restauracaoFormulario, setRestauracaoFormulario] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const [tentativaCarregamento, setTentativaCarregamento] = useState(0);
 
   const [fotoAtual, setFotoAtual] = useState(null);
   const [novaFoto, setNovaFoto] = useState(null);
@@ -439,24 +440,40 @@ export function CadastroEstacionamento() {
       .then(async ([est, adminsData, vagasData]) => {
         let listaAdmins = adminsData || [];
         if (est.adminUid) {
-          try {
-            // Identidade vem do UID vinculado, não do e-mail em cache no estacionamento.
-            const administrador = await apiService.getGerentePorId(est.adminUid);
-            if (!administrador || typeof administrador !== "object" || Array.isArray(administrador)
-                || (!administrador.nome && !administrador.email)
-                || (administrador.uid && administrador.uid !== est.adminUid)) {
-              throw new Error("A consulta não retornou o administrador vinculado.");
-            }
+          const semDuplicata = listaAdmins.filter(
+            (adm) => (adm.uid || adm.id) !== est.adminUid,
+          );
+          const nomeVinculado = String(est.adminNome || "").trim();
+          const emailVinculado = String(est.adminEmail || "").trim();
+
+          if (nomeVinculado || emailVinculado) {
+            // O estacionamento já traz os dados do responsável: evita uma
+            // consulta extra que deixava a edição lenta.
             listaAdmins = [
-              ...listaAdmins.filter((adm) => (adm.uid || adm.id) !== est.adminUid),
-              { ...administrador, uid: est.adminUid },
+              ...semDuplicata,
+              {
+                uid: est.adminUid,
+                nome: nomeVinculado,
+                email: emailVinculado,
+              },
             ];
-          } catch (err) {
-            // Não substituir o responsável por outro disponível se a consulta falhar.
-            listaAdmins = listaAdmins.filter((adm) => (adm.uid || adm.id) !== est.adminUid);
-            if (ativo) setErroAdmins((anterior) => [anterior,
-              "Não foi possível confirmar o nome do administrador vinculado. " + (err.message || "Falha na consulta.")
-            ].filter(Boolean).join(" "));
+          } else {
+            try {
+              // Compatibilidade com documentos antigos sem adminNome/adminEmail.
+              const administrador = await apiService.getGerentePorId(est.adminUid);
+              if (!administrador || typeof administrador !== "object" || Array.isArray(administrador)
+                  || (!administrador.nome && !administrador.email)
+                  || (administrador.uid && administrador.uid !== est.adminUid)) {
+                throw new Error("A consulta não retornou o administrador vinculado.");
+              }
+              listaAdmins = [...semDuplicata, { ...administrador, uid: est.adminUid }];
+            } catch (err) {
+              // Não substituir o responsável por outro disponível se a consulta falhar.
+              listaAdmins = semDuplicata;
+              if (ativo) setErroAdmins((anterior) => [anterior,
+                "Não foi possível confirmar o nome do administrador vinculado. " + (err.message || "Falha na consulta.")
+              ].filter(Boolean).join(" "));
+            }
           }
         }
         if (!ativo) return;
@@ -490,7 +507,7 @@ export function CadastroEstacionamento() {
     return () => {
       ativo = false;
     };
-  }, [estacionamentoId]);
+  }, [estacionamentoId, tentativaCarregamento]);
 
   useEffect(() => {
     if (modalVagas && dialogRef.current && !dialogRef.current.open)
@@ -829,19 +846,40 @@ export function CadastroEstacionamento() {
     }
   }
 
-  if (carregandoDados || (editando && !dadosIniciais)) {
+  if (carregandoDados) {
     return (
       <Layout title="Editar estacionamento">
-        {errorMessage ? (
-          <div role="alert" className="vallet-error-banner">
-            {errorMessage}
+        <div className="vallet-state-card" role="status" aria-live="polite">
+          <span className="vallet-spinner" aria-hidden="true" />
+          <h2>Carregando estacionamento…</h2>
+          <p>Buscando os dados, as vagas e o administrador responsável.</p>
+          <Link className="vallet-state-back" to="/estacionamentos">
+            Voltar para estacionamentos
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (editando && !dadosIniciais) {
+    return (
+      <Layout title="Editar estacionamento">
+        <div className="vallet-state-card vallet-state-error" role="alert">
+          <h2>Não foi possível carregar o estacionamento</h2>
+          <p>{errorMessage || "Verifique a conexão com o servidor e tente novamente."}</p>
+          <div className="vallet-state-actions">
+            <button
+              type="button"
+              className="vallet-btn-primary"
+              onClick={() => setTentativaCarregamento((valor) => valor + 1)}
+            >
+              Tentar novamente
+            </button>
+            <Link className="vallet-link-back" to="/estacionamentos">
+              Voltar para estacionamentos
+            </Link>
           </div>
-        ) : (
-          <p role="status" className="vallet-loading-text">
-            Carregando estacionamento...
-          </p>
-        )}
-        <Link className="vallet-link-back" to="/estacionamentos">Voltar para estacionamentos</Link>
+        </div>
       </Layout>
     );
   }

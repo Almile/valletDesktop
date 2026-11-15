@@ -143,7 +143,8 @@ export default function DetalhesEstacionamento() {
   const enderecoObj = typeof estacionamento?.endereco === "object" ? estacionamento.endereco : {};
   
   const adminResp = admins.find(adm => adm.uid === estacionamento?.adminUid || adm.id === estacionamento?.adminUid);
-  const adminName = adminResp ? (adminResp.nome || adminResp.email) : (estacionamento?.adminUid || "-");
+  const adminName = adminResp?.nome || adminResp?.email
+    || estacionamento?.adminNome || estacionamento?.adminEmail || "-";
 
   return (
     <Layout title="Dados do estacionamento">
