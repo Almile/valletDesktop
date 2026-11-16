@@ -5,6 +5,21 @@ import ChatNavBadge from "./ChatNavBadge";
 import { apiService } from "../services/api";
 import { desconectarChat } from "../services/chat";
 
+import homeIcon    from "../assets/home.png";
+import parkingIcon from "../assets/parking.png";
+import personIcon  from "../assets/person.png";
+import chatIcon    from "../assets/chat.png";
+import spotIcon from "../assets/spot.png";
+
+const iconeStyle = (url) => ({
+  width: "22px",
+  height: "22px",
+  backgroundColor: "currentColor",
+  WebkitMask: `url(${url}) center / contain no-repeat`,
+  mask: `url(${url}) center / contain no-repeat`,
+  display: "inline-block",
+});
+
 export function ThemeToggle() {
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -69,58 +84,25 @@ export default function Layout({ title, children }) {
         <Brand />
 
         <nav className="main-navigation">
-          <NavLink to="/" end>
-              <span 
-                  style={{ 
-                      width: "22px", 
-                      height: "22px", 
-                      backgroundColor: "currentColor", 
-                      WebkitMask: "url('/src/assets/home.png') center / contain no-repeat",
-                      mask: "url('/src/assets/home.png') center / contain no-repeat",
-                      display: "inline-block"
-                  }}
-              ></span>
-              <span>Início</span>
+         <NavLink to="/" end>
+            <span style={iconeStyle(homeIcon)}></span>
+            <span>Início</span>
           </NavLink>
+
           <NavLink to="/estacionamentos" className="menu-item">
-              <span 
-                  style={{ 
-                      width: "22px", 
-                      height: "22px", 
-                      backgroundColor: "currentColor", 
-                      WebkitMask: "url('/src/assets/parking.png') center / contain no-repeat",
-                      mask: "url('/src/assets/parking.png') center / contain no-repeat",
-                      display: "inline-block"
-                  }}
-              ></span>
-              <span>Estacionamentos</span>
+            <span style={iconeStyle(parkingIcon)}></span>
+            <span>Estacionamentos</span>
           </NavLink>
+
           <NavLink to="/gerentes" className="menu-item">
-              <span 
-                  style={{ 
-                      width: "22px", 
-                      height: "22px", 
-                      backgroundColor: "currentColor", 
-                      WebkitMask: "url('/src/assets/person.png') center / contain no-repeat",
-                      mask: "url('/src/assets/person.png') center / contain no-repeat",
-                      display: "inline-block"
-                  }}
-              ></span>
-              <span>Gerentes</span>
+            <span style={iconeStyle(personIcon)}></span>
+            <span>Gerentes</span>
           </NavLink>
+
           <NavLink to="/chat" className="menu-item">
-              <span 
-                  style={{ 
-                      width: "22px", 
-                      height: "22px", 
-                      backgroundColor: "currentColor", 
-                      WebkitMask: "url('/src/assets/chat.png') center / contain no-repeat",
-                      mask: "url('/src/assets/chat.png') center / contain no-repeat",
-                      display: "inline-block"
-                  }}
-              ></span>
-              <span>Chat</span>
-              <ChatNavBadge />
+            <span style={iconeStyle(chatIcon)}></span>
+            <span>Chat</span>
+            <ChatNavBadge />
           </NavLink>
         </nav>
 

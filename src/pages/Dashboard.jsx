@@ -4,6 +4,14 @@ import { apiService } from "../services/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
+import parkingIcon from "../assets/parking.png";
+import personIcon  from "../assets/person.png";
+import spotIcon    from "../assets/spot.png";
+
+const iconeStyle = (url) => ({
+  WebkitMask: `url(${url}) center / contain no-repeat`,
+  mask:       `url(${url}) center / contain no-repeat`,
+});
 
 export default function Dashboard() {
   const [admin, setAdmin] = useState(null);
@@ -108,21 +116,23 @@ export default function Dashboard() {
 
       <section className="statistics-grid">
         <article>
-          <i style={{ WebkitMask: "url('/src/assets/parking.png') center / contain no-repeat", mask: "url('/src/assets/parking.png') center / contain no-repeat" }}></i>
+          <i style={iconeStyle(parkingIcon)}></i>
           <div>
             <small>Estacionamentos</small>
             <strong>{loading ? "..." : stats.estacionamentos}</strong>
           </div>
         </article>
+
         <article>
-          <i style={{ WebkitMask: "url('/src/assets/person.png') center / contain no-repeat", mask: "url('/src/assets/person.png') center / contain no-repeat" }}></i>
+          <i style={iconeStyle(personIcon)}></i>
           <div>
             <small>Gerentes</small>
             <strong>{loading ? "..." : stats.gerentes}</strong>
           </div>
         </article>
+
         <article>
-          <i style={{ WebkitMask: "url('/src/assets/spot.png') center / contain no-repeat", mask: "url('/src/assets/spot.png') center / contain no-repeat" }}></i>
+          <i style={iconeStyle(spotIcon)}></i>
           <div>
             <small>Total de vagas</small>
             <strong>{loading ? "..." : stats.vagas}</strong>
