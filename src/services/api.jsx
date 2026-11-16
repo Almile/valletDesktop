@@ -1,4 +1,4 @@
-const API_URL = "https://valletapi.onrender.com";
+const API_URL = "http://localhost:8000";
 const REQUEST_TIMEOUT_MS = 20000;
 
 const SESSION_EXPIRED_EVENT = "vallet:session-expired";
