@@ -457,3 +457,18 @@
     min-height: 560px;
   }
 }
+.nav-badge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 23px;
+    height: 23px;
+    margin-left: auto;
+    padding: 0 6px;
+    background:var(--support-light);
+    border-radius: 8px;
+    color: var(--main-color);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+}
